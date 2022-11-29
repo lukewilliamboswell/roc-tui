@@ -100,9 +100,7 @@ render = \model ->
                 Elem.unstyled loremIpsum1,
             ]
         else
-            # []
-            # List.map model.todos Elem.unstyled 
-            [Elem.unstyled (Str.joinWith model.todos "")]
+            List.map model.todos Elem.unstyled 
 
     root = Elem.layout
         [
@@ -110,7 +108,7 @@ render = \model ->
             inputBox model.text,
             paragraphs model.scroll body,
         ]
-        { constraints: [Min 2, Min 3, Ratio 1 1] }
+        { constraints: [Min 3, Min 3, Ratio 1 1] }
 
     [root]
 

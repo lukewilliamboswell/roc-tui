@@ -526,8 +526,22 @@ impl core::fmt::Debug for discriminant_Cursor {
 ))]
 #[repr(C)]
 pub union Cursor {
-    At: R2,
+    At: CursorPosition,
     _sizer: [u8; 6],
+}
+
+#[cfg(any(
+    target_arch = "arm",
+    target_arch = "aarch64",
+    target_arch = "wasm32",
+    target_arch = "x86",
+    target_arch = "x86_64"
+))]
+#[derive(Clone, Copy, Debug, Default, Eq, Ord, Hash, PartialEq, PartialOrd)]
+#[repr(C)]
+pub struct CursorPosition {
+    pub col: u16,
+    pub row: u16,
 }
 
 #[cfg(any(
@@ -864,20 +878,6 @@ struct Color_Rgb {
     pub f0: u8,
     pub f1: u8,
     pub f2: u8,
-}
-
-#[cfg(any(
-    target_arch = "arm",
-    target_arch = "aarch64",
-    target_arch = "wasm32",
-    target_arch = "x86",
-    target_arch = "x86_64"
-))]
-#[derive(Clone, Copy, Debug, Default, Eq, Ord, Hash, PartialEq, PartialOrd)]
-#[repr(C)]
-pub struct R2 {
-    pub col: u16,
-    pub row: u16,
 }
 
 #[cfg(any(
@@ -4694,7 +4694,7 @@ impl Cursor {
         target_arch = "x86_64"
     ))]
     /// Construct a tag named `At`, with the appropriate payload
-    pub fn At(arg0: R2) -> Self {
+    pub fn At(arg0: CursorPosition) -> Self {
             let mut answer = Self {
                 At: arg0
             };
@@ -4714,7 +4714,7 @@ impl Cursor {
     /// Unsafely assume the given `Cursor` has a `.discriminant()` of `At` and convert it to `At`'s payload.
             /// (Always examine `.discriminant()` first to make sure this is the correct variant!)
             /// Panics in debug builds if the `.discriminant()` doesn't return `At`.
-            pub unsafe fn into_At(self) -> R2 {
+            pub unsafe fn into_At(self) -> CursorPosition {
                 debug_assert_eq!(self.discriminant(), discriminant_Cursor::At);
         let payload = self.At;
 
@@ -4732,7 +4732,7 @@ impl Cursor {
     /// Unsafely assume the given `Cursor` has a `.discriminant()` of `At` and return its payload.
             /// (Always examine `.discriminant()` first to make sure this is the correct variant!)
             /// Panics in debug builds if the `.discriminant()` doesn't return `At`.
-            pub unsafe fn as_At(&self) -> &R2 {
+            pub unsafe fn as_At(&self) -> &CursorPosition {
                 debug_assert_eq!(self.discriminant(), discriminant_Cursor::At);
         let payload = &self.At;
 

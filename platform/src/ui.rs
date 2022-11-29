@@ -99,9 +99,7 @@ pub fn run_event_loop(title: &str) {
         crossterm::event::DisableMouseCapture
     )
     .expect("TODO handle unable to leave alternate screen or disable mouse capture");
-    terminal
-        .show_cursor()
-        .expect("TODO handle unable to show cursor in terminal");
+
 }
 
 pub enum InputEvent {
@@ -254,8 +252,8 @@ fn renderParagraph<B: tui::backend::Backend>(
         .style(getStyle(style));
 
     // Build pargraph up from nested Span(s)
-    let mut text = Vec::with_capacity(config.text.len());
-    let mut spansElements = Vec::with_capacity(1);
+    let mut text = Vec::new();
+    let mut spansElements = Vec::new();
     for span in &config.text {
         let s = tui::text::Span::styled(span.text.as_str(), getStyle(&span.style));
         spansElements.push(s);
