@@ -13,7 +13,8 @@ Event : [
     FocusGained,
     FocusLost,
     Paste Str,
-    Resize Bounds, 
+    Resize Bounds,
+    Tick, 
 ]
 
 Bounds : { height : U16, width : U16 }

@@ -40,10 +40,10 @@ update = \model, event ->
             model
 
 removeLastCharacter = \text ->
-    text
-    |> Str.graphemes
-    |> List.dropLast
-    |> Str.joinWith ""
+    textUtf8 = Str.toUtf8 text |> List.dropLast
+    when Str.fromUtf8 textUtf8 is 
+        Ok str -> str
+        Err _ -> text 
 
 # Build views to render to the terminal
 helpBar = Elem.paragraph {

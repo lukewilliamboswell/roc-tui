@@ -1,7 +1,7 @@
 use crate::glue::{Bounds, Elem, Event, Model};
 use core::alloc::Layout;
 use core::ffi::c_void;
-use roc_std::RocList;
+use roc_std::{RocList};
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
 use std::os::raw::c_char;
@@ -94,6 +94,95 @@ pub unsafe extern "C" fn roc_memset(dst: *mut c_void, c: i32, n: usize) -> *mut 
     libc::memset(dst, c, n)
 }
 
+// /// Call the app's init function, then render and return that result
+// pub fn init_and_render(bounds: Bounds) -> (*const Model, RocList<Elem>) {
+//     let closure_data_buf;
+//     let closure_layout;
+
+//     // Call init to get the initial model
+//     let model = unsafe {
+//         let ret_val_layout = Layout::array::<u8>(init_result_size() as usize).unwrap();
+
+//         // TODO allocate on the stack if it's under a certain size
+//         let ret_val_buf = std::alloc::alloc(ret_val_layout) as *mut Model;
+
+//         closure_layout = Layout::array::<u8>(init_size() as usize).unwrap();
+
+//         // TODO allocate on the stack if it's under a certain size
+//         closure_data_buf = std::alloc::alloc(closure_layout);
+
+//         call_init(&bounds, closure_data_buf, ret_val_buf);
+
+//         ret_val_buf
+//     };
+
+//     // Call render passing the model to get the initial Elems
+//     let elems = unsafe {
+//         let mut ret_val: MaybeUninit<RocList<Elem>> = MaybeUninit::uninit();
+
+//         // Reuse the buffer from the previous closure if possible
+//         let closure_data_buf =
+//             std::alloc::realloc(closure_data_buf, closure_layout, roc_render_size() as usize);
+
+//         call_render(model, closure_data_buf, ret_val.as_mut_ptr());
+
+//         std::alloc::dealloc(closure_data_buf, closure_layout);
+
+//         ret_val.assume_init()
+//     };
+
+//     (model, elems)
+// }
+
+// /// Call the app's update function, then render and return that result
+// pub fn update(model: *const Model, event: Event) -> *const Model {
+//     let closure_data_buf;
+//     let closure_layout;
+
+//     // Call update to get the new model
+//     unsafe {
+//         let ret_val_layout = Layout::array::<u8>(update_result_size() as usize).unwrap();
+
+//         // TODO allocate on the stack if it's under a certain size
+//         let ret_val_buf = std::alloc::alloc(ret_val_layout) as *mut Model;
+
+//         closure_layout = Layout::array::<u8>(update_size() as usize).unwrap();
+
+//         // TODO allocate on the stack if it's under a certain size
+//         closure_data_buf = std::alloc::alloc(closure_layout);
+
+//         call_update(model, &event, closure_data_buf, ret_val_buf);
+
+//         ret_val_buf
+//     }
+// }
+
+// /// Call the app's render and return that result
+// pub fn render(model: *const Model) -> RocList<Elem> {
+//     let closure_layout;
+//     let closure_data_buf;
+//     unsafe {
+//         closure_layout = Layout::array::<u8>(update_size() as usize).unwrap();
+//         closure_data_buf = std::alloc::alloc(closure_layout);
+//     }
+
+//     let elems = unsafe {
+//         let mut ret_val: MaybeUninit<RocList<Elem>> = MaybeUninit::uninit();
+
+//         let closure_data_buf =
+//             std::alloc::realloc(closure_data_buf, closure_layout, roc_render_size() as usize);
+
+//         call_render(model, closure_data_buf, ret_val.as_mut_ptr());
+
+//         std::alloc::dealloc(closure_data_buf, closure_layout);
+
+//         ret_val.assume_init()
+//     };
+
+//     elems
+// }
+
+
 /// Call the app's init function, then render and return that result
 pub fn init_and_render(bounds: Bounds) -> (*const Model, RocList<Elem>) {
     let closure_data_buf;
@@ -157,18 +246,33 @@ pub fn update(model: *const Model, event: Event) -> *const Model {
     }
 }
 
-/// Call the app's render and return that result
-pub fn render(model: *const Model) -> RocList<Elem> {
-    let closure_layout;
+/// Call the app's update function, then render and return that result
+pub fn update_and_render(model: *const Model, event: Event) -> (*const Model, RocList<Elem>) {
     let closure_data_buf;
-    unsafe {
-        closure_layout = Layout::array::<u8>(update_size() as usize).unwrap();
-        closure_data_buf = std::alloc::alloc(closure_layout);
-    }
+    let closure_layout;
 
+    // Call update to get the new model
+    let model = unsafe {
+        let ret_val_layout = Layout::array::<u8>(update_result_size() as usize).unwrap();
+
+        // TODO allocate on the stack if it's under a certain size
+        let ret_val_buf = std::alloc::alloc(ret_val_layout) as *mut Model;
+
+        closure_layout = Layout::array::<u8>(update_size() as usize).unwrap();
+
+        // TODO allocate on the stack if it's under a certain size
+        closure_data_buf = std::alloc::alloc(closure_layout);
+
+        call_update(model, &event, closure_data_buf, ret_val_buf);
+
+        ret_val_buf
+    };
+
+    // Call render passing the model to get the initial Elems
     let elems = unsafe {
         let mut ret_val: MaybeUninit<RocList<Elem>> = MaybeUninit::uninit();
 
+        // Reuse the buffer from the previous closure if possible
         let closure_data_buf =
             std::alloc::realloc(closure_data_buf, closure_layout, roc_render_size() as usize);
 
@@ -179,5 +283,5 @@ pub fn render(model: *const Model) -> RocList<Elem> {
         ret_val.assume_init()
     };
 
-    elems
+    (model, elems)
 }

@@ -77,7 +77,8 @@ pub fn run_event_loop(title: &str) {
         }
 
         if appRedraw {
-            elems = crate::roc::render(model);
+            let tickEvent = crate::glue::Event::Tick;
+            (model, elems) = crate::roc::update_and_render(model, tickEvent);
 
             // Draw the widgets
             terminal

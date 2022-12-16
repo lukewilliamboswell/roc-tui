@@ -85,6 +85,7 @@ pub enum discriminant_Event {
     KeyPressed = 2,
     Paste = 3,
     Resize = 4,
+    Tick = 5,
 }
 
 impl core::fmt::Debug for discriminant_Event {
@@ -95,6 +96,7 @@ impl core::fmt::Debug for discriminant_Event {
             Self::KeyPressed => f.write_str("discriminant_Event::KeyPressed"),
             Self::Paste => f.write_str("discriminant_Event::Paste"),
             Self::Resize => f.write_str("discriminant_Event::Resize"),
+            Self::Tick => f.write_str("discriminant_Event::Tick"),
         }
     }
 }
@@ -2007,6 +2009,46 @@ impl Event {
     }
 
     #[cfg(any(
+        target_arch = "arm",
+        target_arch = "wasm32",
+        target_arch = "x86"
+    ))]
+    /// A tag named Tick, which has no payload.
+    pub const Tick: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Event>()];
+
+        bytes[16] = discriminant_Event::Tick as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Event>()], Event>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the Tick tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_Tick(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the Tick tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_Tick(&self) {
+        ()
+    }
+
+    #[cfg(any(
         target_arch = "aarch64",
         target_arch = "x86_64"
     ))]
@@ -2057,6 +2099,19 @@ impl Event {
 
         core::mem::transmute::<[u8; core::mem::size_of::<Event>()], Event>(bytes)
     };
+
+    #[cfg(any(
+        target_arch = "aarch64",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named Tick, which has no payload.
+    pub const Tick: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Event>()];
+
+        bytes[32] = discriminant_Event::Tick as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Event>()], Event>(bytes)
+    };
 }
 
 impl Drop for Event {
@@ -2075,6 +2130,7 @@ impl Drop for Event {
                 discriminant_Event::KeyPressed => unsafe { core::mem::ManuallyDrop::drop(&mut self.KeyPressed) },
                 discriminant_Event::Paste => unsafe { core::mem::ManuallyDrop::drop(&mut self.Paste) },
                 discriminant_Event::Resize => {}
+                discriminant_Event::Tick => {}
             }
 
     }
@@ -2102,6 +2158,7 @@ impl PartialEq for Event {
                 discriminant_Event::KeyPressed => self.KeyPressed == other.KeyPressed,
                 discriminant_Event::Paste => self.Paste == other.Paste,
                 discriminant_Event::Resize => self.Resize == other.Resize,
+                discriminant_Event::Tick => true,
             }
         }
     }
@@ -2128,6 +2185,7 @@ impl PartialOrd for Event {
                 discriminant_Event::KeyPressed => self.KeyPressed.partial_cmp(&other.KeyPressed),
                 discriminant_Event::Paste => self.Paste.partial_cmp(&other.Paste),
                 discriminant_Event::Resize => self.Resize.partial_cmp(&other.Resize),
+                discriminant_Event::Tick => Some(core::cmp::Ordering::Equal),
             }
         }
     }
@@ -2154,6 +2212,7 @@ impl Ord for Event {
                 discriminant_Event::KeyPressed => self.KeyPressed.cmp(&other.KeyPressed),
                 discriminant_Event::Paste => self.Paste.cmp(&other.Paste),
                 discriminant_Event::Resize => self.Resize.cmp(&other.Resize),
+                discriminant_Event::Tick => core::cmp::Ordering::Equal,
             }
         }
     }
@@ -2187,6 +2246,10 @@ impl Clone for Event {
                 discriminant_Event::Resize => Self {
                     Resize: self.Resize.clone(),
                 },
+                discriminant_Event::Tick => core::mem::transmute::<
+                    core::mem::MaybeUninit<Event>,
+                    Event,
+                >(core::mem::MaybeUninit::uninit()),
             }
 
         };
@@ -2220,6 +2283,7 @@ impl core::hash::Hash for Event {
                     discriminant_Event::Resize.hash(state);
                     self.Resize.hash(state);
                 },
+            discriminant_Event::Tick => discriminant_Event::Tick.hash(state),
         }
     }
 }
@@ -2248,6 +2312,7 @@ impl core::fmt::Debug for Event {
                 discriminant_Event::Resize => f.debug_tuple("Resize")
         .field(&self.Resize)
         .finish(),
+                discriminant_Event::Tick => f.write_str("Tick"),
             }
         }
     }
