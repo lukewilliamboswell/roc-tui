@@ -12,9 +12,16 @@ platform "tui"
 programForHost : {
     init : (Bounds -> Model) as Init,
     update : (Model, Event -> Model) as Update,
-    render : (Model -> List Elem) as Render,
+    render : (Model -> [T (List Elem) Model]) as Render,
 }
-programForHost = program
+programForHost =
+    {
+        init: program.init,
+        update: program.update,
+        render: \model ->
+            elems = program.render model
+            T elems model
+    }
 
 # UNCOMMENT THIS TO USE ROC GLUE
 # platform "tui"
