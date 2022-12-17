@@ -1,10 +1,12 @@
-use crate::glue::{Bounds, Elem, Event, Model};
+use crate::glue::{Bounds, Elem, Event};
 use core::alloc::Layout;
 use core::ffi::c_void;
 use roc_std::{RocList};
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
 use std::os::raw::c_char;
+
+type Model = c_void;
 
 extern "C" {
     // program

@@ -121,22 +121,6 @@ pub union Event {
     target_arch = "x86",
     target_arch = "x86_64"
 ))]
-#[derive(Clone, Debug, Default, Eq, Ord, Hash, PartialEq, PartialOrd)]
-#[repr(C)]
-pub struct Model {
-    pub text: roc_std::RocStr,
-    pub todos: roc_std::RocList<roc_std::RocStr>,
-    pub bounds: Bounds,
-    pub scroll: u16,
-}
-
-#[cfg(any(
-    target_arch = "arm",
-    target_arch = "aarch64",
-    target_arch = "wasm32",
-    target_arch = "x86",
-    target_arch = "x86_64"
-))]
 #[derive(Clone, Debug, Eq, Ord, Hash, PartialEq, PartialOrd)]
 #[repr(C)]
 pub struct Span {

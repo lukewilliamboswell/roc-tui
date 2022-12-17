@@ -1,11 +1,27 @@
 app "example-hello"
     packages { pf: "../platform/main.roc" }
     imports [
-        pf.Model.{ Model },
         pf.Event.{ Event, Bounds },
         pf.Elem.{ Elem },
     ]
-    provides [program] {} to pf
+    provides [program, Model] {} to pf
+
+# Model
+Model : {
+    text : Str,
+    todos : List Str,
+    scroll : U16,
+    bounds : { height : U16, width : U16 },
+}
+
+updateScroll : Model, [Up, Down, Left, Right] -> Model
+updateScroll = \model, direction ->
+    scroll = when direction is 
+        Up -> Num.subWrap model.scroll 1u16
+        Down -> Num.addWrap model.scroll 1u16
+        _ -> model.scroll
+
+    {model & scroll : scroll}
 
 # Initialise the Application
 init : Bounds -> Model
@@ -19,16 +35,15 @@ init = \bounds -> {
 # Handle events from the platform
 update : Model, Event -> Model
 update = \model, event ->
-    # newTodos = List.append model.todos model.text
     when event is
         KeyPressed code ->
             when code is
                 Scalar char -> { model & text: Str.concat model.text char }
                 Delete | Backspace -> { model & text: removeLastCharacter model.text }
-                Left -> Model.updateScroll model Left
-                Right -> Model.updateScroll model Right
-                Up -> Model.updateScroll model Up
-                Down -> Model.updateScroll model Down
+                Left -> updateScroll model Left
+                Right -> updateScroll model Right
+                Up -> updateScroll model Up
+                Down -> updateScroll model Down
                 Enter ->
                     { model & text: "", todos : ["newTodos", "asd"] }
                 _ -> model
