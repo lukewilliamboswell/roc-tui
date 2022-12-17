@@ -29,3 +29,7 @@ My goal is to learn more about Roc platform dev, and explore ideas for the Roc e
 4. Use `cargo build` from the platform folder to fix any errors
 5. Wire functionality into the platform host Rust code 
 6. Update `hello.roc` example and iterate 
+
+## Build a release with
+
+`roc build --bundle .tar.br platform/main.roc`
