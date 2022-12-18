@@ -25,6 +25,8 @@ render = \model ->
     [ Elem.layout [ Elem.paragraph { text } ] {} ]
 ```
 
+![](todo-example.gif)
+
 **I welcome any feedback or assistance!**
 
 ## Things I'm working on, or thinking about
