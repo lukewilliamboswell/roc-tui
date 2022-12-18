@@ -5,7 +5,9 @@ This is a tui platform for Roc built on top of the excellent [tui-rs](https://do
 
 My goal for making this platform is to learn more about Roc dev; to explore ideas for the Roc editor, and how to do [Action-State in Roc](https://docs.google.com/document/d/16qY4NGVOHu8mvInVD-ddTajZYSsFvFBvQON_hmyHGfo/edit#).
 
-Here is a hello-world example to use this platform. Recommend you use a URL release of this platform, for more information how to do this see the [Roc Tutorial](https://www.roc-lang.org/tutorial#the-app-module-header).
+**I welcome any feedback or assistance!**
+
+Here is the `hello.roc` example.
 
 ```elixir
 # Model
@@ -25,24 +27,31 @@ render = \model ->
     [ Elem.layout [ Elem.paragraph { text } ] {} ]
 ```
 
+Here is a demonstration of the `todo.roc` example.
+
 ![](todo-example.gif)
 
-**I welcome any feedback or assistance!**
+I recommend you use a URL release of this platform. For more information how to do this see the [Roc Tutorial](https://www.roc-lang.org/tutorial#the-app-module-header).
 
 ## Things I'm working on, or thinking about
 - [x] Block widget
 - [x] Paragraph widget
-- [x] Layout widget
+- [x] Responsive layouts 
 - [x] Styling
 - [x] Scrolling for paragraphs
-- [x] Optional Records for better API
-- [ ] Cusor on paragraphs to make input boxes
-- [ ] Fix support newline characters
-- [ ] List widget with selection
-- [ ] Write more tests
-- [ ] Support mouse input
-- [ ] Better error handling, don't mess up terminal if Roc panics somehow 
-- [ ] Support more widgets blocked on [#4554](https://github.com/roc-lang/roc/issues/4554)
+- [x] Optional Records for better API 
+- [ ] [List](https://docs.rs/tui/0.19.0/tui/widgets/struct.List.html) widget
+- [ ] Support more widgets. Currently blocked on [#4554](https://github.com/roc-lang/roc/issues/4554)
+  - [ ] [Canvas](https://docs.rs/tui/latest/tui/widgets/canvas/struct.Canvas.html#) widget  
+  - [ ] Tabs
+  - [ ] Table
+  - [ ] Charts
+  - [ ] Sparkline
+- [ ] More examples
+- [ ] Support Tasks such as opening a File similar to CLI, needs investigation. Better to wait for improved `roc glue` support and packages
+- [ ] Better error handling, don't mess up terminal if Roc panics somehow
+- [ ] Support for mouse input
+- [ ] Write some tests
 
 ## Process to add functionality
 1. Review the [tui-rs docs](https://docs.rs/tui/0.19.0/tui/) and [examples](https://github.com/fdehau/tui-rs/tree/master/examples) to understand the behaviour.
