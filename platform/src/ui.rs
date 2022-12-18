@@ -239,36 +239,39 @@ fn renderParagraph<B: tui::backend::Backend>(
 
     // Block window for the paragraph text to live in
     let borders = getBorders(&config.block.borders);
-    let borderType = getBorderType(config.block.borderType);
-    let borderStyle = getStyle(&config.block.borderStyle);
+    let border_type = getBorderType(config.block.borderType);
+    let border_style = getStyle(&config.block.borderStyle);
     let title = tui::text::Span::styled(config.block.title.text.as_str(), getStyle(&config.block.title.style));
-    let titleAlignment = getAlignment(config.block.titleAlignment);
+    let title_alignment = getAlignment(config.block.titleAlignment);
     let style = &config.block.style;
     let block = tui::widgets::Block::default()
         .title(title)
-        .title_alignment(titleAlignment)
+        .title_alignment(title_alignment)
         .borders(borders)
-        .border_style(borderStyle)
-        .border_type(borderType)
+        .border_style(border_style)
+        .border_type(border_type)
         .style(getStyle(style));
 
     // Build pargraph up from nested Span(s)
     let mut text = Vec::new();
-    let mut spansElements = Vec::new();
-    for span in &config.text {
-        let s = tui::text::Span::styled(span.text.as_str(), getStyle(&span.style));
-        spansElements.push(s);
+    for line in &config.text {
+        let mut spans_elements = Vec::new();
+        for span in line {
+            let s = tui::text::Span::styled(span.text.as_str(), getStyle(&span.style));
+            spans_elements.push(s);
+        }
+        let spans = tui::text::Spans::from(spans_elements);
+        text.push(spans);
     }
-    text.push(tui::text::Spans::from(spansElements));
 
     // Create the paragraph
-    let textAlignment = getAlignment(config.textAlignment);
+    let text_alignment = getAlignment(config.textAlignment);
     let scroll = getScroll(config.scroll);
     let p = tui::widgets::Paragraph::new(text)
         .block(block)
         .scroll(scroll)
         .wrap(tui::widgets::Wrap { trim: true })
-        .alignment(textAlignment);
+        .alignment(text_alignment);
 
     // Show the cursor if required
     let cursor = getCursor(config.cursor);
@@ -367,8 +370,8 @@ fn getColor(color: crate::glue::Color) -> tui::style::Color {
     match color.discriminant() {
         crate::glue::discriminant_Color::Default => tui::style::Color::Reset,
         crate::glue::discriminant_Color::Rgb => {
-            let (r, g, b) = unsafe { color.as_Rgb() };
-            tui::style::Color::Rgb(*r, *g, *b)
+            let (r, g, b) = unsafe { color.into_Rgb() };
+            tui::style::Color::Rgb(r, g, b)
         }
         crate::glue::discriminant_Color::White => tui::style::Color::White,
         crate::glue::discriminant_Color::Black => tui::style::Color::Black,

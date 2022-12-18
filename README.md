@@ -11,7 +11,7 @@ Here is a hello-world example to use this platform. Recommend you use a URL rele
 # Model
 Model : { text : Str }
 
-init = \_ -> { text: "Hello, you Roc my world!" }
+init = \_ -> { text: "Hello world!" }
 
 # Handle Events
 update : Model, Event -> Model
@@ -19,18 +19,10 @@ update = \model, _ -> model
 
 # Render UI
 render : Model -> List Elem
-render = \model -> [
-    Elem.layout
-        [
-            Elem.paragraph {
-                text: [
-                    [Elem.styled model.text { fg: Red }],
-                    [Elem.unstyled "Press ESC to close application."],
-                ],
-            },
-        ]
-        {},
-]
+render = \model -> 
+    text = [[Elem.styled model.text { fg: Green }]]
+    
+    [ Elem.layout [ Elem.paragraph { text } ] {} ]
 ```
 
 **I welcome any feedback or assistance!**

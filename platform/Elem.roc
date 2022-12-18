@@ -69,7 +69,7 @@ st = \{ fg ? Default, bg ? Default, modifiers ? [] } -> { fg, bg, modifiers }
 defaultStyle = { bg: Default, fg: Default, modifiers: [] }
 
 paragraph : {
-    text ? List Span,
+    text ? List Line,
     block ? BlockConfig,
     textAlignment ? Alignment,
     scroll ? ScrollOffset,
@@ -106,11 +106,12 @@ BlockConfig : {
 }
 
 # A single line string where all graphemes have the same style
+Line : List Span
 Span : { text : Str, style : Style }
 
 # A widget to display some text
 ParagraphConfig : {
-    text : List Span,
+    text : List Line,
     block : BlockConfig,
     textAlignment : Alignment,
     scroll : ScrollOffset,

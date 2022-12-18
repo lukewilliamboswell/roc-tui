@@ -77,6 +77,20 @@ union union_Elem {
     target_arch = "x86",
     target_arch = "x86_64"
 ))]
+#[derive(Clone, Debug, Eq, Ord, Hash, PartialEq, PartialOrd)]
+#[repr(C)]
+pub struct Span {
+    pub style: Style,
+    pub text: roc_std::RocStr,
+}
+
+#[cfg(any(
+    target_arch = "arm",
+    target_arch = "aarch64",
+    target_arch = "wasm32",
+    target_arch = "x86",
+    target_arch = "x86_64"
+))]
 #[derive(Clone, Copy, Eq, Ord, Hash, PartialEq, PartialOrd)]
 #[repr(u8)]
 pub enum discriminant_Event {
@@ -112,20 +126,6 @@ pub union Event {
     Paste: core::mem::ManuallyDrop<roc_std::RocStr>,
     Resize: Bounds,
     _sizer: [u8; 20],
-}
-
-#[cfg(any(
-    target_arch = "arm",
-    target_arch = "aarch64",
-    target_arch = "wasm32",
-    target_arch = "x86",
-    target_arch = "x86_64"
-))]
-#[derive(Clone, Debug, Eq, Ord, Hash, PartialEq, PartialOrd)]
-#[repr(C)]
-pub struct Span {
-    pub style: Style,
-    pub text: roc_std::RocStr,
 }
 
 #[cfg(any(
@@ -474,7 +474,7 @@ struct Elem_Paragraph {
 #[repr(C)]
 pub struct ParagraphConfig {
     pub block: BlockConfig,
-    pub text: roc_std::RocList<Span>,
+    pub text: roc_std::RocList<roc_std::RocList<Span>>,
     pub cursor: Cursor,
     pub scroll: u16,
     pub textAlignment: Alignment,
