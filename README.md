@@ -7,6 +7,8 @@ My goal for making this platform is to learn more about Roc dev; to explore idea
 
 **I welcome any feedback or assistance!**
 
+Note that to close the app it is currently hardcoded in the platform to the 'ESC' key. This will be configurable when I add support for effects. 
+
 Here is the `hello.roc` example.
 
 ```elixir
@@ -42,6 +44,7 @@ If your feeling brave you can use a URL release of this platform. For more infor
 - [x] Optional Records for better API 
 - [x] [List](https://docs.rs/tui/0.19.0/tui/widgets/struct.List.html) widget
 - [ ] Add support for Popup/Modals
+- [ ] Support for effects (e.g. close app)  
 - [ ] Support more widgets. Currently blocked on [#4554](https://github.com/roc-lang/roc/issues/4554)
   - [ ] [Canvas](https://docs.rs/tui/latest/tui/widgets/canvas/struct.Canvas.html#) widget  
   - [ ] Tabs
