@@ -27,7 +27,6 @@ pub fn run_event_loop(title: &str) {
 
     loop {
         let mut appReturn = false;
-        let mut appRedraw = false;
 
         // Handle any events
         let result = match events
@@ -66,28 +65,22 @@ pub fn run_event_loop(title: &str) {
                 model = crate::roc::update(model, event);
             }
             InputEvent::Tick => {
-                // TODO add ticks?
-                // Are these needed in the app??
-                appRedraw = true;
-            }
+                let tickEvent = crate::glue::Event::Tick;
+                (model, elems) = crate::roc::update_and_render(model, tickEvent);
+
+                // Draw the widgets
+                terminal
+                    .draw(|f| {
+                        for elem in &elems {
+                            renderWidget(f, f.size(), &elem)
+                        }
+                    })
+                    .expect("Err: Unable to draw to terminal.");
+                }
         };
 
         if appReturn {
             break;
-        }
-
-        if appRedraw {
-            let tickEvent = crate::glue::Event::Tick;
-            (model, elems) = crate::roc::update_and_render(model, tickEvent);
-
-            // Draw the widgets
-            terminal
-                .draw(|f| {
-                    for elem in &elems {
-                        renderWidget(f, f.size(), &elem)
-                    }
-                })
-                .expect("Err: Unable to draw to terminal.");
         }
     }
 
