@@ -40,10 +40,21 @@ block = Elem.blockConfig { title, borders : [All] }
 body = Elem.layout [ Elem.paragraph { text : bgText, block } ] {}
 
 # Popup modal
-fgText = [[Elem.styled "Some foreground text... press Enter to close me!" { fg: Green }]]
 modal = 
     Elem.layout [ 
-        Elem.paragraph { text : fgText, block, textAlignment : Center },
+        Elem.paragraph { 
+            text : [
+                [],
+                [Elem.styled "Can you handle this... press Enter to close me!" { fg: Red }],
+                [],
+            ], 
+            block : Elem.blockConfig { 
+                title : Elem.styled "WARNING!" { bg : Red, fg: White}, 
+                titleAlignment : Center,
+                borders : [All],
+            }, 
+            textAlignment : Center,
+        },
     ] { 
-        popup : Centered { percentX : 50, percentY : 50 },
+        popup : Centered { percentX : 80, percentY : 20 },
     }
