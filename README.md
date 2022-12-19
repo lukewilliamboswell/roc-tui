@@ -40,7 +40,7 @@ I recommend you use a URL release of this platform. For more information how to 
 - [x] Styling
 - [x] Scrolling for paragraphs
 - [x] Optional Records for better API 
-- [ ] [List](https://docs.rs/tui/0.19.0/tui/widgets/struct.List.html) widget
+- [x] [List](https://docs.rs/tui/0.19.0/tui/widgets/struct.List.html) widget
 - [ ] Support more widgets. Currently blocked on [#4554](https://github.com/roc-lang/roc/issues/4554)
   - [ ] [Canvas](https://docs.rs/tui/latest/tui/widgets/canvas/struct.Canvas.html#) widget  
   - [ ] Tabs
