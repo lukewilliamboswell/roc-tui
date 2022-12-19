@@ -21,10 +21,11 @@ interface Elem
         LayoutConfig,
         PopupConfig,
         paragraph,
-        blockConfig, 
+        blockConfig,
         st,
         unstyled,
         layout,
+        list,
         styled,
     ]
     imports []
@@ -50,39 +51,42 @@ CursorPosition : { row : U16, col : U16 }
 Cursor : [Hidden, At CursorPosition]
 Corner : [TopLeft, TopRight, BottomRight, BottomLeft]
 ModalPosition : { percentX : U16, percentY : U16 }
+ListSelection : [None, Selected Nat]
 PopupConfig : [
     None,
-    Centered ModalPosition
+    Centered ModalPosition,
 ]
 
-unstyled : Str -> Span 
+unstyled : Str -> Span
 unstyled = \str ->
     { text: str, style: defaultStyle }
 
-styled : Str, { fg ? Color, bg ? Color, modifiers ? List TextModifier } -> Span 
+styled : Str, { fg ?Color, bg ?Color, modifiers ?List TextModifier } -> Span
 styled = \str, { fg ? Default, bg ? Default, modifiers ? [] } ->
     { text: str, style: { fg, bg, modifiers } }
 
-st : { fg ? Color, bg ? Color, modifiers ? List TextModifier } -> Style
+st : { fg ?Color, bg ?Color, modifiers ?List TextModifier } -> Style
 st = \{ fg ? Default, bg ? Default, modifiers ? [] } -> { fg, bg, modifiers }
 
 defaultStyle = { bg: Default, fg: Default, modifiers: [] }
+defaultBlock = {
+    title: { text: "", style: defaultStyle },
+    titleAlignment: Left,
+    style: defaultStyle,
+    borders: [],
+    borderStyle: defaultStyle,
+    borderType: Plain,
+}
 
-paragraph : {
-    text ? List Line,
-    block ? BlockConfig,
-    textAlignment ? Alignment,
-    scroll ? ScrollOffset,
-    cursor ? Cursor,
-} -> Elem
-paragraph = \{ text ? [], block ? {
-        title : { text : "", style : defaultStyle },
-        titleAlignment : Left,
-        style : defaultStyle,
-        borders : [],
-        borderStyle : defaultStyle,
-        borderType : Plain,
-    }, textAlignment ? Left, scroll ? 0, cursor ? Hidden } -> 
+paragraph :{
+        text ? List Line,
+        block ? BlockConfig,
+        textAlignment ? Alignment,
+        scroll ? ScrollOffset,
+        cursor ? Cursor,
+    }
+    -> Elem
+paragraph = \{ text ? [], block ? defaultBlock, textAlignment ? Left, scroll ? 0, cursor ? Hidden } ->
     Paragraph {
         text,
         block,
@@ -91,8 +95,22 @@ paragraph = \{ text ? [], block ? {
         cursor,
     }
 
-blockConfig : { title ? Span,titleAlignment ? Alignment,style ? Style,borders ? List BorderModifier,borderStyle ? Style,borderType ? BorderType} -> BlockConfig
-blockConfig = \{ title ? { text : "", style : defaultStyle },titleAlignment ? Left,style ? defaultStyle,borders ? [],borderStyle ? defaultStyle,borderType ? Plain} -> {title,titleAlignment,style,borders,borderStyle,borderType}
+list :{
+        items ? List Line,
+        selected ? ListSelection,
+        block ? BlockConfig,
+        style ? Style,
+        highlightSymbol ? Str,
+        highlightSymbolRepeat ? Bool,
+        highlightStyle ? Style,
+        startCorner ? Corner,
+    }
+    -> Elem
+list = \{ items ? [],selected ? None,block ? defaultBlock, style ? defaultStyle, highlightSymbol ? ">",highlightSymbolRepeat ? Bool.false, highlightStyle ? defaultStyle,startCorner ? TopLeft,   } -> 
+    ListItems { items, selected, block, style, highlightSymbol, highlightSymbolRepeat, highlightStyle, startCorner, }
+
+blockConfig : { title ?Span, titleAlignment ?Alignment, style ?Style, borders ?List BorderModifier, borderStyle ?Style, borderType ?BorderType } -> BlockConfig
+blockConfig = \{ title ? { text: "", style: defaultStyle }, titleAlignment ? Left, style ? defaultStyle, borders ? [], borderStyle ? defaultStyle, borderType ? Plain } -> { title, titleAlignment, style, borders, borderStyle, borderType }
 
 # Base widget to be used with all upper level ones.
 # It may be used to display a box border around the widget and/or add a title.
@@ -130,7 +148,8 @@ LayoutConfig : {
 
 # A widget to display several items among which one can be selected (optional)
 ListConfig : {
-    items : List Span,
+    items : List Line,
+    selected : ListSelection,
     block : BlockConfig,
     style : Style,
     highlightSymbol : Str,
@@ -139,5 +158,5 @@ ListConfig : {
     startCorner : Corner,
 }
 
-layout : (List Elem), {constraints ? List Constraint,direction ? LayoutDirection,vMargin ? U16,hMargin ? U16,popup ? PopupConfig} -> Elem
-layout = \children, {constraints ? [],direction ? Vertical,vMargin ? 0u16,hMargin ? 0u16,popup ? None} -> Layout children {constraints,direction,vMargin,hMargin,popup}
+layout : List Elem, { constraints ?List Constraint, direction ?LayoutDirection, vMargin ?U16, hMargin ?U16, popup ?PopupConfig } -> Elem
+layout = \children, { constraints ? [], direction ? Vertical, vMargin ? 0u16, hMargin ? 0u16, popup ? None } -> Layout children { constraints, direction, vMargin, hMargin, popup }

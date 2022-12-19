@@ -1,3 +1,5 @@
+use roc_std::RocStr;
+
 const SCREEN_DRAW_RATE_MS: u64 = 50;
 
 pub fn run_event_loop(title: &str) {
@@ -191,7 +193,7 @@ fn renderWidget<B: tui::backend::Backend>(
         crate::glue::discriminant_Elem::Paragraph => renderParagraph(f, area, elem),
         crate::glue::discriminant_Elem::Layout => renderLayout(f, area, elem),
         crate::glue::discriminant_Elem::Block => renderBlock(f, area, elem),
-        crate::glue::discriminant_Elem::ListItems => {} //TODO implement renderBlock(f, area, elem),
+        crate::glue::discriminant_Elem::ListItems => renderList(f, area, elem),
     }
 }
 
@@ -309,6 +311,59 @@ fn renderBlock<B: tui::backend::Backend>(
     // TODO Can we refactor out Block to re-use in all the other widgets?
     // this will require creating it separately to rendering. Might change the
     // way we recursively do layouts. Requires further investigation.
+}
+
+fn renderList<B: tui::backend::Backend>(
+    f: &mut tui::Frame<B>,
+    area: tui::layout::Rect,
+    list: &crate::glue::Elem,
+) {
+    let config = unsafe { list.as_ListItems() };
+
+    // Block window for the list to live in
+    let borders = getBorders(&config.block.borders);
+    let border_type = getBorderType(config.block.borderType);
+    let border_style = getStyle(&config.block.borderStyle);
+    let title = tui::text::Span::styled(config.block.title.text.as_str(), getStyle(&config.block.title.style));
+    let title_alignment = getAlignment(config.block.titleAlignment);
+    let style = &config.block.style;
+    let block = tui::widgets::Block::default()
+        .title(title)
+        .title_alignment(title_alignment)
+        .borders(borders)
+        .border_style(border_style)
+        .border_type(border_type);
+
+    // Build list items up from nested Span(s)
+    let mut items = Vec::new();
+    for line in &config.items {
+        let mut spans_elements = Vec::new();
+        for span in line {
+            let s = tui::text::Span::styled(span.text.as_str(), getStyle(&span.style));
+            spans_elements.push(s);
+        }
+        let spans = tui::text::Spans::from(spans_elements);
+        let listItem = tui::widgets::ListItem::new(spans);
+        items.push(listItem);
+    }
+
+    let highlight_symbol =  RocStr::as_str(&config.highlightSymbol);
+    let start_corner = getCorner(&config.startCorner);
+    let list = tui::widgets::List::new(items)
+        .block(block)
+        .style(getStyle(style))
+        .highlight_style(getStyle(&config.highlightStyle))
+        .highlight_symbol(highlight_symbol)
+        .repeat_highlight_symbol(config.highlightSymbolRepeat)
+        .start_corner(start_corner);
+
+    let selection = getListSelection(&config.selected);
+    let mut list_state = tui::widgets::ListState::default();
+    list_state.select(selection);
+        
+    // Render to the frame
+    f.render_stateful_widget(list, area, &mut list_state);
+
 }
 
 fn getStyle(rocStyle: &crate::glue::Style) -> tui::style::Style {
@@ -539,4 +594,23 @@ fn getScroll(scroll: u16) -> (u16, u16) {
 
     // TODO investigate why scrolling the column doesn't do anything.. 
     (scroll, 0)
+}
+
+fn getCorner(corner : &crate::glue::Corner) -> tui::layout::Corner {
+    match corner {
+        crate::glue::Corner::BottomLeft => tui::layout::Corner::BottomLeft,
+        crate::glue::Corner::BottomRight => tui::layout::Corner::BottomRight,
+        crate::glue::Corner::TopLeft => tui::layout::Corner::TopLeft,
+        crate::glue::Corner::TopRight => tui::layout::Corner::TopRight,
+    }
+}
+
+fn getListSelection(selection : &crate::glue::ListSelection) -> Option<usize> {
+    match selection.discriminant() {
+        crate::glue::discriminant_ListSelection::None => None,
+        crate::glue::discriminant_ListSelection::Selected =>{
+            let s = unsafe { selection.into_Selected() };
+            Some(s as usize)
+        },
+    }
 }

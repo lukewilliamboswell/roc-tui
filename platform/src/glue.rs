@@ -556,7 +556,8 @@ pub struct ListConfig {
     pub block: BlockConfig,
     pub highlightStyle: Style,
     pub highlightSymbol: roc_std::RocStr,
-    pub items: roc_std::RocList<Span>,
+    pub items: roc_std::RocList<roc_std::RocList<Span>>,
+    pub selected: ListSelection,
     pub style: Style,
     pub highlightSymbolRepeat: bool,
     pub startCorner: Corner,
@@ -587,6 +588,40 @@ impl core::fmt::Debug for Corner {
             Self::TopRight => f.write_str("Corner::TopRight"),
         }
     }
+}
+
+#[cfg(any(
+    target_arch = "arm",
+    target_arch = "aarch64",
+    target_arch = "wasm32",
+    target_arch = "x86",
+    target_arch = "x86_64"
+))]
+#[derive(Clone, Copy, Eq, Ord, Hash, PartialEq, PartialOrd)]
+#[repr(u8)]
+pub enum discriminant_ListSelection {
+    None = 0,
+    Selected = 1,
+}
+
+impl core::fmt::Debug for discriminant_ListSelection {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::None => f.write_str("discriminant_ListSelection::None"),
+            Self::Selected => f.write_str("discriminant_ListSelection::Selected"),
+        }
+    }
+}
+
+#[cfg(any(
+    target_arch = "arm",
+    target_arch = "wasm32",
+    target_arch = "x86"
+))]
+#[repr(C)]
+pub union ListSelection {
+    Selected: u32,
+    _sizer: [u8; 8],
 }
 
 #[cfg(any(
@@ -902,6 +937,16 @@ pub union KeyCode {
     Modifier: ModifierKeyCode,
     Scalar: core::mem::ManuallyDrop<roc_std::RocStr>,
     _sizer: [u8; 32],
+}
+
+#[cfg(any(
+    target_arch = "aarch64",
+    target_arch = "x86_64"
+))]
+#[repr(C)]
+pub union ListSelection {
+    Selected: u64,
+    _sizer: [u8; 16],
 }
 
 impl Elem {
@@ -4967,6 +5012,344 @@ impl core::fmt::Debug for Cursor {
         .field(&self.At)
         .finish(),
                 discriminant_Cursor::Hidden => f.write_str("Hidden"),
+            }
+        }
+    }
+}
+
+impl ListSelection {
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "wasm32",
+        target_arch = "x86"
+    ))]
+    /// Returns which variant this tag union holds. Note that this never includes a payload!
+    pub fn discriminant(&self) -> discriminant_ListSelection {
+        unsafe {
+            let bytes = core::mem::transmute::<&Self, &[u8; core::mem::size_of::<Self>()]>(self);
+
+            core::mem::transmute::<u8, discriminant_ListSelection>(*bytes.as_ptr().add(4))
+        }
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "wasm32",
+        target_arch = "x86"
+    ))]
+    /// Internal helper
+    fn set_discriminant(&mut self, discriminant: discriminant_ListSelection) {
+        let discriminant_ptr: *mut discriminant_ListSelection = (self as *mut ListSelection).cast();
+
+        unsafe {
+            *(discriminant_ptr.add(4)) = discriminant;
+        }
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "wasm32",
+        target_arch = "x86"
+    ))]
+    /// A tag named None, which has no payload.
+    pub const None: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<ListSelection>()];
+
+        bytes[4] = discriminant_ListSelection::None as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<ListSelection>()], ListSelection>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the None tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_None(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the None tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_None(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "wasm32",
+        target_arch = "x86"
+    ))]
+    /// Construct a tag named `Selected`, with the appropriate payload
+    pub fn Selected(arg: u32) -> Self {
+            let mut answer = Self {
+                Selected: arg
+            };
+
+            answer.set_discriminant(discriminant_ListSelection::Selected);
+
+            answer
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "wasm32",
+        target_arch = "x86"
+    ))]
+    /// Unsafely assume the given `ListSelection` has a `.discriminant()` of `Selected` and convert it to `Selected`'s payload.
+            /// (Always examine `.discriminant()` first to make sure this is the correct variant!)
+            /// Panics in debug builds if the `.discriminant()` doesn't return `Selected`.
+            pub unsafe fn into_Selected(self) -> u32 {
+                debug_assert_eq!(self.discriminant(), discriminant_ListSelection::Selected);
+        let payload = self.Selected;
+
+        payload
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "wasm32",
+        target_arch = "x86"
+    ))]
+    /// Unsafely assume the given `ListSelection` has a `.discriminant()` of `Selected` and return its payload.
+            /// (Always examine `.discriminant()` first to make sure this is the correct variant!)
+            /// Panics in debug builds if the `.discriminant()` doesn't return `Selected`.
+            pub unsafe fn as_Selected(&self) -> &u32 {
+                debug_assert_eq!(self.discriminant(), discriminant_ListSelection::Selected);
+        let payload = &self.Selected;
+
+        &payload
+    }
+
+    #[cfg(any(
+        target_arch = "aarch64",
+        target_arch = "x86_64"
+    ))]
+    /// Returns which variant this tag union holds. Note that this never includes a payload!
+    pub fn discriminant(&self) -> discriminant_ListSelection {
+        unsafe {
+            let bytes = core::mem::transmute::<&Self, &[u8; core::mem::size_of::<Self>()]>(self);
+
+            core::mem::transmute::<u8, discriminant_ListSelection>(*bytes.as_ptr().add(8))
+        }
+    }
+
+    #[cfg(any(
+        target_arch = "aarch64",
+        target_arch = "x86_64"
+    ))]
+    /// Internal helper
+    fn set_discriminant(&mut self, discriminant: discriminant_ListSelection) {
+        let discriminant_ptr: *mut discriminant_ListSelection = (self as *mut ListSelection).cast();
+
+        unsafe {
+            *(discriminant_ptr.add(8)) = discriminant;
+        }
+    }
+
+    #[cfg(any(
+        target_arch = "aarch64",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named None, which has no payload.
+    pub const None: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<ListSelection>()];
+
+        bytes[8] = discriminant_ListSelection::None as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<ListSelection>()], ListSelection>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "aarch64",
+        target_arch = "x86_64"
+    ))]
+    /// Construct a tag named `Selected`, with the appropriate payload
+    pub fn Selected(arg: u64) -> Self {
+            let mut answer = Self {
+                Selected: arg
+            };
+
+            answer.set_discriminant(discriminant_ListSelection::Selected);
+
+            answer
+    }
+
+    #[cfg(any(
+        target_arch = "aarch64",
+        target_arch = "x86_64"
+    ))]
+    /// Unsafely assume the given `ListSelection` has a `.discriminant()` of `Selected` and convert it to `Selected`'s payload.
+            /// (Always examine `.discriminant()` first to make sure this is the correct variant!)
+            /// Panics in debug builds if the `.discriminant()` doesn't return `Selected`.
+            pub unsafe fn into_Selected(self) -> u64 {
+                debug_assert_eq!(self.discriminant(), discriminant_ListSelection::Selected);
+        let payload = self.Selected;
+
+        payload
+    }
+
+    #[cfg(any(
+        target_arch = "aarch64",
+        target_arch = "x86_64"
+    ))]
+    /// Unsafely assume the given `ListSelection` has a `.discriminant()` of `Selected` and return its payload.
+            /// (Always examine `.discriminant()` first to make sure this is the correct variant!)
+            /// Panics in debug builds if the `.discriminant()` doesn't return `Selected`.
+            pub unsafe fn as_Selected(&self) -> &u64 {
+                debug_assert_eq!(self.discriminant(), discriminant_ListSelection::Selected);
+        let payload = &self.Selected;
+
+        &payload
+    }
+}
+
+impl Eq for ListSelection {}
+
+impl PartialEq for ListSelection {
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    fn eq(&self, other: &Self) -> bool {
+            if self.discriminant() != other.discriminant() {
+                return false;
+            }
+
+            unsafe {
+            match self.discriminant() {
+                discriminant_ListSelection::None => true,
+                discriminant_ListSelection::Selected => self.Selected == other.Selected,
+            }
+        }
+    }
+}
+
+impl PartialOrd for ListSelection {
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        match self.discriminant().partial_cmp(&other.discriminant()) {
+            Some(core::cmp::Ordering::Equal) => {}
+            not_eq => return not_eq,
+        }
+
+        unsafe {
+            match self.discriminant() {
+                discriminant_ListSelection::None => Some(core::cmp::Ordering::Equal),
+                discriminant_ListSelection::Selected => self.Selected.partial_cmp(&other.Selected),
+            }
+        }
+    }
+}
+
+impl Ord for ListSelection {
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+            match self.discriminant().cmp(&other.discriminant()) {
+                core::cmp::Ordering::Equal => {}
+                not_eq => return not_eq,
+            }
+
+            unsafe {
+            match self.discriminant() {
+                discriminant_ListSelection::None => core::cmp::Ordering::Equal,
+                discriminant_ListSelection::Selected => self.Selected.cmp(&other.Selected),
+            }
+        }
+    }
+}
+
+impl Copy for ListSelection {}
+
+impl Clone for ListSelection {
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    fn clone(&self) -> Self {
+        let mut answer = unsafe {
+            match self.discriminant() {
+                discriminant_ListSelection::None => core::mem::transmute::<
+                    core::mem::MaybeUninit<ListSelection>,
+                    ListSelection,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_ListSelection::Selected => Self {
+                    Selected: self.Selected.clone(),
+                },
+            }
+
+        };
+
+        answer.set_discriminant(self.discriminant());
+
+        answer
+    }
+}
+
+impl core::hash::Hash for ListSelection {
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {        match self.discriminant() {
+            discriminant_ListSelection::None => discriminant_ListSelection::None.hash(state),
+            discriminant_ListSelection::Selected => unsafe {
+                    discriminant_ListSelection::Selected.hash(state);
+                    self.Selected.hash(state);
+                },
+        }
+    }
+}
+
+impl core::fmt::Debug for ListSelection {
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("ListSelection::")?;
+
+        unsafe {
+            match self.discriminant() {
+                discriminant_ListSelection::None => f.write_str("None"),
+                discriminant_ListSelection::Selected => f.debug_tuple("Selected")
+        .field(&self.Selected)
+        .finish(),
             }
         }
     }
