@@ -1,4 +1,4 @@
-app "hello-world"
+app "example-app"
     packages { pf: "../platform/main.roc" }
     imports [
         pf.Event.{ Event },
