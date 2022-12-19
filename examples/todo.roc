@@ -68,8 +68,14 @@ inputBox = \draft ->
             [[Elem.styled "Type your todo here... and press enter to save it." { fg : Red}]]
         else 
             [[Elem.styled draft { bg: Black, fg: White }]]
+    cursor = 
+        if Str.isEmpty draft then 
+            Hidden
+        else 
+            col = Str.countGraphemes draft |> Num.toU16 |> Num.add 1
+            At { row : 1, col }
 
-    Elem.paragraph { block, text }
+    Elem.paragraph { block, text, cursor }
 
 renderTodos = \todos, selected ->
     text = 
