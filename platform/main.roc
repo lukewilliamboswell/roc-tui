@@ -12,6 +12,8 @@ platform "tui"
 programForHost : {
     init : (Bounds -> Model) as Init,
     update : (Model, Event -> Model) as Update,
+    # The T (List Elem) Model is a workaround to stop use-after-free bug from 
+    # Roc throwing away long strings on model re-render
     render : (Model -> [T (List Elem) Model]) as Render,
 }
 programForHost =

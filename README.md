@@ -43,7 +43,7 @@ If your feeling brave you can use a URL release of this platform. For more infor
 - [x] Scrolling for paragraphs
 - [x] Optional Records for better API 
 - [x] [List](https://docs.rs/tui/0.19.0/tui/widgets/struct.List.html) widget
-- [ ] Add support for Popup/Modals
+- [x] Add support for Popup/Modals
 - [ ] Support for effects (e.g. close app)  
 - [ ] Support more widgets. Currently blocked on [#4554](https://github.com/roc-lang/roc/issues/4554)
   - [ ] [Canvas](https://docs.rs/tui/latest/tui/widgets/canvas/struct.Canvas.html#) widget  

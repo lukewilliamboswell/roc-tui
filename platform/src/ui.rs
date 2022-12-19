@@ -206,6 +206,23 @@ fn renderLayout<B: tui::backend::Backend>(
     let layoutDirection = getLayoutDirection(config.direction);
     let mut constraints = getConstraints(&config.constraints);
 
+    // Handle popup behaviour
+    let popup = getPopup(&config.popup);
+    let area2 : tui::layout::Rect;
+    match popup {
+        None => {
+            area2 = area;
+        },
+        Some ((x,y)) => {
+
+            // calculate popup from area
+            area2 = centered_rect(x, y, area);
+
+            // clear the background
+            f.render_widget(tui::widgets::Clear, area2); 
+        },
+    }
+
     // check we have enough constriants otherwise add some default to stop tui from crashing
     while constraints.len() < elems.len() {
         constraints.push(tui::layout::Constraint::Ratio(1, 1));
@@ -216,13 +233,42 @@ fn renderLayout<B: tui::backend::Backend>(
         .horizontal_margin(config.hMargin)
         .vertical_margin(config.vMargin)
         .constraints(constraints)
-        .split(area);
+        .split(area2);
 
     let mut chunkIndex = 0;
     for elem in elems {
         renderWidget(f, chunks[chunkIndex], elem);
         chunkIndex += 1;
     }
+
+}
+
+
+/// helper function to create a centered rect using up certain percentage of the available rect `r`
+fn centered_rect(percent_x: u16, percent_y: u16, r: tui::layout::Rect) -> tui::layout::Rect {
+    let popup_layout = tui::layout::Layout::default()
+        .direction(tui::layout::Direction::Vertical)
+        .constraints(
+            [
+                tui::layout::Constraint::Percentage((100 - percent_y) / 2),
+                tui::layout::Constraint::Percentage(percent_y),
+                tui::layout::Constraint::Percentage((100 - percent_y) / 2),
+            ]
+            .as_ref(),
+        )
+        .split(r);
+
+    tui::layout::Layout::default()
+        .direction(tui::layout::Direction::Horizontal)
+        .constraints(
+            [
+                tui::layout::Constraint::Percentage((100 - percent_x) / 2),
+                tui::layout::Constraint::Percentage(percent_x),
+                tui::layout::Constraint::Percentage((100 - percent_x) / 2),
+            ]
+            .as_ref(),
+        )
+        .split(popup_layout[1])[1]
 }
 
 fn renderParagraph<B: tui::backend::Backend>(
@@ -305,7 +351,6 @@ fn renderBlock<B: tui::backend::Backend>(
         .border_type(borderType)
         .style(getStyle(style));
 
-    // Render to the frame
     f.render_widget(block, area);
 
     // TODO Can we refactor out Block to re-use in all the other widgets?
@@ -611,6 +656,16 @@ fn getListSelection(selection : &crate::glue::ListSelection) -> Option<usize> {
         crate::glue::discriminant_ListSelection::Selected =>{
             let s = unsafe { selection.into_Selected() };
             Some(s as usize)
+        },
+    }
+}
+
+fn getPopup(popup : &crate::glue::PopupConfig) -> Option<(u16,u16)>{
+    match popup.discriminant() {
+        crate::glue::discriminant_PopupConfig::None => None,
+        crate::glue::discriminant_PopupConfig::Centered =>{
+            let pos = unsafe { popup.into_Centered() };
+            Some((pos.percentX, pos.percentY))
         },
     }
 }
