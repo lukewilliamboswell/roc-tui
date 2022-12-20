@@ -852,11 +852,23 @@ pub struct Style {
 pub enum discriminant_Color {
     Black = 0,
     Blue = 1,
-    Default = 2,
-    Green = 3,
-    Red = 4,
-    Rgb = 5,
-    White = 6,
+    Cyan = 2,
+    DarkGray = 3,
+    Default = 4,
+    Gray = 5,
+    Green = 6,
+    Indexed = 7,
+    LightBlue = 8,
+    LightCyan = 9,
+    LightGreen = 10,
+    LightMagenta = 11,
+    LightRed = 12,
+    LightYellow = 13,
+    Magenta = 14,
+    Red = 15,
+    Rgb = 16,
+    White = 17,
+    Yellow = 18,
 }
 
 impl core::fmt::Debug for discriminant_Color {
@@ -864,11 +876,23 @@ impl core::fmt::Debug for discriminant_Color {
         match self {
             Self::Black => f.write_str("discriminant_Color::Black"),
             Self::Blue => f.write_str("discriminant_Color::Blue"),
+            Self::Cyan => f.write_str("discriminant_Color::Cyan"),
+            Self::DarkGray => f.write_str("discriminant_Color::DarkGray"),
             Self::Default => f.write_str("discriminant_Color::Default"),
+            Self::Gray => f.write_str("discriminant_Color::Gray"),
             Self::Green => f.write_str("discriminant_Color::Green"),
+            Self::Indexed => f.write_str("discriminant_Color::Indexed"),
+            Self::LightBlue => f.write_str("discriminant_Color::LightBlue"),
+            Self::LightCyan => f.write_str("discriminant_Color::LightCyan"),
+            Self::LightGreen => f.write_str("discriminant_Color::LightGreen"),
+            Self::LightMagenta => f.write_str("discriminant_Color::LightMagenta"),
+            Self::LightRed => f.write_str("discriminant_Color::LightRed"),
+            Self::LightYellow => f.write_str("discriminant_Color::LightYellow"),
+            Self::Magenta => f.write_str("discriminant_Color::Magenta"),
             Self::Red => f.write_str("discriminant_Color::Red"),
             Self::Rgb => f.write_str("discriminant_Color::Rgb"),
             Self::White => f.write_str("discriminant_Color::White"),
+            Self::Yellow => f.write_str("discriminant_Color::Yellow"),
         }
     }
 }
@@ -882,6 +906,7 @@ impl core::fmt::Debug for discriminant_Color {
 ))]
 #[repr(C)]
 pub union Color {
+    Indexed: u8,
     Rgb: Color_Rgb,
     _sizer: [u8; 4],
 }
@@ -5749,6 +5774,90 @@ impl Color {
         target_arch = "x86",
         target_arch = "x86_64"
     ))]
+    /// A tag named Cyan, which has no payload.
+    pub const Cyan: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::Cyan as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the Cyan tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_Cyan(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the Cyan tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_Cyan(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named DarkGray, which has no payload.
+    pub const DarkGray: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::DarkGray as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the DarkGray tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_DarkGray(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the DarkGray tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_DarkGray(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
     /// A tag named Default, which has no payload.
     pub const Default: Self = unsafe {
         let mut bytes = [0; core::mem::size_of::<Color>()];
@@ -5791,6 +5900,48 @@ impl Color {
         target_arch = "x86",
         target_arch = "x86_64"
     ))]
+    /// A tag named Gray, which has no payload.
+    pub const Gray: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::Gray as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the Gray tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_Gray(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the Gray tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_Gray(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
     /// A tag named Green, which has no payload.
     pub const Green: Self = unsafe {
         let mut bytes = [0; core::mem::size_of::<Color>()];
@@ -5823,6 +5974,352 @@ impl Color {
     /// Other `as` methods return a payload, but since the Green tag
     /// has no payload, this does nothing and is only here for completeness.
     pub fn as_Green(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Construct a tag named `Indexed`, with the appropriate payload
+    pub fn Indexed(arg: u8) -> Self {
+            let mut answer = Self {
+                Indexed: arg
+            };
+
+            answer.set_discriminant(discriminant_Color::Indexed);
+
+            answer
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Unsafely assume the given `Color` has a `.discriminant()` of `Indexed` and convert it to `Indexed`'s payload.
+            /// (Always examine `.discriminant()` first to make sure this is the correct variant!)
+            /// Panics in debug builds if the `.discriminant()` doesn't return `Indexed`.
+            pub unsafe fn into_Indexed(self) -> u8 {
+                debug_assert_eq!(self.discriminant(), discriminant_Color::Indexed);
+        let payload = self.Indexed;
+
+        payload
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Unsafely assume the given `Color` has a `.discriminant()` of `Indexed` and return its payload.
+            /// (Always examine `.discriminant()` first to make sure this is the correct variant!)
+            /// Panics in debug builds if the `.discriminant()` doesn't return `Indexed`.
+            pub unsafe fn as_Indexed(&self) -> &u8 {
+                debug_assert_eq!(self.discriminant(), discriminant_Color::Indexed);
+        let payload = &self.Indexed;
+
+        &payload
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named LightBlue, which has no payload.
+    pub const LightBlue: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::LightBlue as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the LightBlue tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_LightBlue(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the LightBlue tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_LightBlue(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named LightCyan, which has no payload.
+    pub const LightCyan: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::LightCyan as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the LightCyan tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_LightCyan(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the LightCyan tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_LightCyan(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named LightGreen, which has no payload.
+    pub const LightGreen: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::LightGreen as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the LightGreen tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_LightGreen(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the LightGreen tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_LightGreen(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named LightMagenta, which has no payload.
+    pub const LightMagenta: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::LightMagenta as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the LightMagenta tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_LightMagenta(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the LightMagenta tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_LightMagenta(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named LightRed, which has no payload.
+    pub const LightRed: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::LightRed as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the LightRed tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_LightRed(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the LightRed tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_LightRed(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named LightYellow, which has no payload.
+    pub const LightYellow: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::LightYellow as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the LightYellow tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_LightYellow(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the LightYellow tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_LightYellow(&self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named Magenta, which has no payload.
+    pub const Magenta: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::Magenta as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the Magenta tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_Magenta(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the Magenta tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_Magenta(&self) {
         ()
     }
 
@@ -5973,6 +6470,48 @@ impl Color {
     pub fn as_White(&self) {
         ()
     }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// A tag named Yellow, which has no payload.
+    pub const Yellow: Self = unsafe {
+        let mut bytes = [0; core::mem::size_of::<Color>()];
+
+        bytes[3] = discriminant_Color::Yellow as u8;
+
+        core::mem::transmute::<[u8; core::mem::size_of::<Color>()], Color>(bytes)
+    };
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `into_` methods return a payload, but since the Yellow tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn into_Yellow(self) {
+        ()
+    }
+
+    #[cfg(any(
+        target_arch = "arm",
+        target_arch = "aarch64",
+        target_arch = "wasm32",
+        target_arch = "x86",
+        target_arch = "x86_64"
+    ))]
+    /// Other `as` methods return a payload, but since the Yellow tag
+    /// has no payload, this does nothing and is only here for completeness.
+    pub fn as_Yellow(&self) {
+        ()
+    }
 }
 
 impl Eq for Color {}
@@ -5994,11 +6533,23 @@ impl PartialEq for Color {
             match self.discriminant() {
                 discriminant_Color::Black => true,
                 discriminant_Color::Blue => true,
+                discriminant_Color::Cyan => true,
+                discriminant_Color::DarkGray => true,
                 discriminant_Color::Default => true,
+                discriminant_Color::Gray => true,
                 discriminant_Color::Green => true,
+                discriminant_Color::Indexed => self.Indexed == other.Indexed,
+                discriminant_Color::LightBlue => true,
+                discriminant_Color::LightCyan => true,
+                discriminant_Color::LightGreen => true,
+                discriminant_Color::LightMagenta => true,
+                discriminant_Color::LightRed => true,
+                discriminant_Color::LightYellow => true,
+                discriminant_Color::Magenta => true,
                 discriminant_Color::Red => true,
                 discriminant_Color::Rgb => self.Rgb == other.Rgb,
                 discriminant_Color::White => true,
+                discriminant_Color::Yellow => true,
             }
         }
     }
@@ -6022,11 +6573,23 @@ impl PartialOrd for Color {
             match self.discriminant() {
                 discriminant_Color::Black => Some(core::cmp::Ordering::Equal),
                 discriminant_Color::Blue => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::Cyan => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::DarkGray => Some(core::cmp::Ordering::Equal),
                 discriminant_Color::Default => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::Gray => Some(core::cmp::Ordering::Equal),
                 discriminant_Color::Green => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::Indexed => self.Indexed.partial_cmp(&other.Indexed),
+                discriminant_Color::LightBlue => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::LightCyan => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::LightGreen => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::LightMagenta => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::LightRed => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::LightYellow => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::Magenta => Some(core::cmp::Ordering::Equal),
                 discriminant_Color::Red => Some(core::cmp::Ordering::Equal),
                 discriminant_Color::Rgb => self.Rgb.partial_cmp(&other.Rgb),
                 discriminant_Color::White => Some(core::cmp::Ordering::Equal),
+                discriminant_Color::Yellow => Some(core::cmp::Ordering::Equal),
             }
         }
     }
@@ -6050,11 +6613,23 @@ impl Ord for Color {
             match self.discriminant() {
                 discriminant_Color::Black => core::cmp::Ordering::Equal,
                 discriminant_Color::Blue => core::cmp::Ordering::Equal,
+                discriminant_Color::Cyan => core::cmp::Ordering::Equal,
+                discriminant_Color::DarkGray => core::cmp::Ordering::Equal,
                 discriminant_Color::Default => core::cmp::Ordering::Equal,
+                discriminant_Color::Gray => core::cmp::Ordering::Equal,
                 discriminant_Color::Green => core::cmp::Ordering::Equal,
+                discriminant_Color::Indexed => self.Indexed.cmp(&other.Indexed),
+                discriminant_Color::LightBlue => core::cmp::Ordering::Equal,
+                discriminant_Color::LightCyan => core::cmp::Ordering::Equal,
+                discriminant_Color::LightGreen => core::cmp::Ordering::Equal,
+                discriminant_Color::LightMagenta => core::cmp::Ordering::Equal,
+                discriminant_Color::LightRed => core::cmp::Ordering::Equal,
+                discriminant_Color::LightYellow => core::cmp::Ordering::Equal,
+                discriminant_Color::Magenta => core::cmp::Ordering::Equal,
                 discriminant_Color::Red => core::cmp::Ordering::Equal,
                 discriminant_Color::Rgb => self.Rgb.cmp(&other.Rgb),
                 discriminant_Color::White => core::cmp::Ordering::Equal,
+                discriminant_Color::Yellow => core::cmp::Ordering::Equal,
             }
         }
     }
@@ -6081,11 +6656,54 @@ impl Clone for Color {
                     core::mem::MaybeUninit<Color>,
                     Color,
                 >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::Cyan => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::DarkGray => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
                 discriminant_Color::Default => core::mem::transmute::<
                     core::mem::MaybeUninit<Color>,
                     Color,
                 >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::Gray => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
                 discriminant_Color::Green => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::Indexed => Self {
+                    Indexed: self.Indexed.clone(),
+                },
+                discriminant_Color::LightBlue => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::LightCyan => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::LightGreen => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::LightMagenta => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::LightRed => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::LightYellow => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::Magenta => core::mem::transmute::<
                     core::mem::MaybeUninit<Color>,
                     Color,
                 >(core::mem::MaybeUninit::uninit()),
@@ -6097,6 +6715,10 @@ impl Clone for Color {
                     Rgb: self.Rgb.clone(),
                 },
                 discriminant_Color::White => core::mem::transmute::<
+                    core::mem::MaybeUninit<Color>,
+                    Color,
+                >(core::mem::MaybeUninit::uninit()),
+                discriminant_Color::Yellow => core::mem::transmute::<
                     core::mem::MaybeUninit<Color>,
                     Color,
                 >(core::mem::MaybeUninit::uninit()),
@@ -6121,14 +6743,29 @@ impl core::hash::Hash for Color {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {        match self.discriminant() {
             discriminant_Color::Black => discriminant_Color::Black.hash(state),
             discriminant_Color::Blue => discriminant_Color::Blue.hash(state),
+            discriminant_Color::Cyan => discriminant_Color::Cyan.hash(state),
+            discriminant_Color::DarkGray => discriminant_Color::DarkGray.hash(state),
             discriminant_Color::Default => discriminant_Color::Default.hash(state),
+            discriminant_Color::Gray => discriminant_Color::Gray.hash(state),
             discriminant_Color::Green => discriminant_Color::Green.hash(state),
+            discriminant_Color::Indexed => unsafe {
+                    discriminant_Color::Indexed.hash(state);
+                    self.Indexed.hash(state);
+                },
+            discriminant_Color::LightBlue => discriminant_Color::LightBlue.hash(state),
+            discriminant_Color::LightCyan => discriminant_Color::LightCyan.hash(state),
+            discriminant_Color::LightGreen => discriminant_Color::LightGreen.hash(state),
+            discriminant_Color::LightMagenta => discriminant_Color::LightMagenta.hash(state),
+            discriminant_Color::LightRed => discriminant_Color::LightRed.hash(state),
+            discriminant_Color::LightYellow => discriminant_Color::LightYellow.hash(state),
+            discriminant_Color::Magenta => discriminant_Color::Magenta.hash(state),
             discriminant_Color::Red => discriminant_Color::Red.hash(state),
             discriminant_Color::Rgb => unsafe {
                     discriminant_Color::Rgb.hash(state);
                     self.Rgb.hash(state);
                 },
             discriminant_Color::White => discriminant_Color::White.hash(state),
+            discriminant_Color::Yellow => discriminant_Color::Yellow.hash(state),
         }
     }
 }
@@ -6148,8 +6785,21 @@ impl core::fmt::Debug for Color {
             match self.discriminant() {
                 discriminant_Color::Black => f.write_str("Black"),
                 discriminant_Color::Blue => f.write_str("Blue"),
+                discriminant_Color::Cyan => f.write_str("Cyan"),
+                discriminant_Color::DarkGray => f.write_str("DarkGray"),
                 discriminant_Color::Default => f.write_str("Default"),
+                discriminant_Color::Gray => f.write_str("Gray"),
                 discriminant_Color::Green => f.write_str("Green"),
+                discriminant_Color::Indexed => f.debug_tuple("Indexed")
+        .field(&self.Indexed)
+        .finish(),
+                discriminant_Color::LightBlue => f.write_str("LightBlue"),
+                discriminant_Color::LightCyan => f.write_str("LightCyan"),
+                discriminant_Color::LightGreen => f.write_str("LightGreen"),
+                discriminant_Color::LightMagenta => f.write_str("LightMagenta"),
+                discriminant_Color::LightRed => f.write_str("LightRed"),
+                discriminant_Color::LightYellow => f.write_str("LightYellow"),
+                discriminant_Color::Magenta => f.write_str("Magenta"),
                 discriminant_Color::Red => f.write_str("Red"),
                 discriminant_Color::Rgb => f.debug_tuple("Rgb")
         .field(&(&self.Rgb).f0)
@@ -6157,6 +6807,7 @@ impl core::fmt::Debug for Color {
 .field(&(&self.Rgb).f2)
         .finish(),
                 discriminant_Color::White => f.write_str("White"),
+                discriminant_Color::Yellow => f.write_str("Yellow"),
             }
         }
     }

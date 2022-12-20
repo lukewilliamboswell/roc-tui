@@ -461,16 +461,31 @@ fn getStyle(rocStyle: &crate::glue::Style) -> tui::style::Style {
 
 fn getColor(color: crate::glue::Color) -> tui::style::Color {
     match color.discriminant() {
-        crate::glue::discriminant_Color::Default => tui::style::Color::Reset,
-        crate::glue::discriminant_Color::Rgb => {
-            let (r, g, b) = unsafe { color.into_Rgb() };
-            tui::style::Color::Rgb(r, g, b)
-        }
-        crate::glue::discriminant_Color::White => tui::style::Color::White,
         crate::glue::discriminant_Color::Black => tui::style::Color::Black,
-        crate::glue::discriminant_Color::Red => tui::style::Color::Red,
-        crate::glue::discriminant_Color::Green => tui::style::Color::Green,
         crate::glue::discriminant_Color::Blue => tui::style::Color::Blue,
+        crate::glue::discriminant_Color::Cyan => tui::style::Color::Cyan,
+        crate::glue::discriminant_Color::DarkGray => tui::style::Color::DarkGray,
+        crate::glue::discriminant_Color::Default => tui::style::Color::Reset,
+        crate::glue::discriminant_Color::Gray => tui::style::Color::Gray,
+        crate::glue::discriminant_Color::Green => tui::style::Color::Green,
+        crate::glue::discriminant_Color::Indexed => {
+            let color = unsafe { color.into_Indexed() };
+            tui::style::Color::Indexed(color)
+        },
+        crate::glue::discriminant_Color::LightBlue => tui::style::Color::LightBlue,
+        crate::glue::discriminant_Color::LightCyan => tui::style::Color::LightCyan,
+        crate::glue::discriminant_Color::LightGreen  => tui::style::Color::LightGreen,
+        crate::glue::discriminant_Color::LightMagenta  => tui::style::Color::LightMagenta,
+        crate::glue::discriminant_Color::LightRed  => tui::style::Color::LightRed,
+        crate::glue::discriminant_Color::LightYellow  => tui::style::Color::LightYellow,
+        crate::glue::discriminant_Color::Magenta  => tui::style::Color::Magenta,
+        crate::glue::discriminant_Color::Red  => tui::style::Color::Red,
+        crate::glue::discriminant_Color::Rgb  => {
+            let color = unsafe { color.into_Rgb() };
+            tui::style::Color::Rgb(color.0, color.1, color.2)
+        },
+        crate::glue::discriminant_Color::White  => tui::style::Color::White,
+        crate::glue::discriminant_Color::Yellow  => tui::style::Color::Yellow,
     }
 }
 

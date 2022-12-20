@@ -20,6 +20,6 @@ update = \model, _ -> model
 # Render UI
 render : Model -> List Elem
 render = \model -> 
-    text = [[Elem.styled model.text { fg: Green }]]
+    text = [[Elem.styled model.text { fg: Magenta }]]
     
     [ Elem.layout [ Elem.paragraph { text } ] {} ]

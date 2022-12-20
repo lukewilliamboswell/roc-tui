@@ -38,7 +38,6 @@ Elem : [
     Layout (List Elem) LayoutConfig,
 ]
 
-Color : [Rgb U8 U8 U8, Default, White, Black, Red, Green, Blue]
 TextModifier : [Bold, Dim, Italic, Underlined, SlowBlink, RapidBlink, Reversed, Hidden, CrossedOut]
 BorderModifier : [None, Top, Right, Bottom, Left, All]
 BorderType : [Plain, Rounded, Double, Thick]
@@ -158,5 +157,36 @@ ListConfig : {
     startCorner : Corner,
 }
 
-layout : List Elem, { constraints ?List Constraint, direction ?LayoutDirection, vMargin ?U16, hMargin ?U16, popup ?PopupConfig } -> Elem
+# The following list of 16 base colors are available for almost all terminals.
+# Light        Dark        DarkGrey    Black       Red        DarkRed
+# Green        DarkGreen   Yellow        DarkYellow  Blue    DarkBlue
+# Magenta    DarkMagenta Cyan        DarkCyan    White    Grey
+# 
+# Indexed is the [ANSI 256 color](https://jonasjacek.github.io/colors/)
+# Rgb is supported on most UNIX terminals and Windows 10 only
+# Underlying library is crossterm::style::Color
+Color : [
+    Default,
+    Black,
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Cyan,
+    Gray,
+    DarkGray,
+    LightRed,
+    LightGreen,
+    LightYellow,
+    LightBlue,
+    LightMagenta,
+    LightCyan,
+    White,
+    Rgb U8 U8 U8,
+    Indexed U8,
+]
+
+layout : List Elem, { constraints ? List Constraint, direction ? LayoutDirection, vMargin ? U16, hMargin ? U16, popup ? PopupConfig } -> Elem
 layout = \children, { constraints ? [], direction ? Vertical, vMargin ? 0u16, hMargin ? 0u16, popup ? None } -> Layout children { constraints, direction, vMargin, hMargin, popup }
+
