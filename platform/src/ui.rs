@@ -1,4 +1,6 @@
-use roc_std::RocStr;
+use roc_std::{RocStr, RocList};
+use crate::glue;
+use crate::roc;
 
 const SCREEN_DRAW_RATE_MS: u64 = 50;
 
@@ -19,14 +21,14 @@ pub fn run_event_loop() {
     let tick_rate = std::time::Duration::from_millis(SCREEN_DRAW_RATE_MS);
     let events = Events::new(tick_rate);
     let size = terminal.size().expect("TODO unable to get frame size");
-    let window_bounds = crate::glue::Bounds {
+    let window_bounds = glue::Bounds {
         height: size.height,
         width: size.width,
     };
 
     // Initialise Roc app
-    let mut elems : roc_std::RocList<crate::glue::Elem>;
-    let (mut model, _) = crate::roc::init_and_render(window_bounds);
+    let mut elems : RocList<glue::Elem>;
+    let (mut model, _) = roc::init_and_render(window_bounds);
 
     loop {
         let mut app_return = false;
@@ -42,34 +44,34 @@ pub fn run_event_loop() {
                     app_return = true;
                 } else {
                     let kc = get_key_code(key.code);
-                    let event = crate::glue::Event::KeyPressed(kc);
-                    model = crate::roc::update(model, event);
+                    let event = glue::Event::KeyPressed(kc);
+                    model = roc::update(model, event);
                 }
             }
             InputEvent::FocusGained => {
-                let event = crate::glue::Event::FocusGained;
-                model = crate::roc::update(model, event);
+                let event = glue::Event::FocusGained;
+                model = roc::update(model, event);
             }
             InputEvent::FocusLost => {
-                let event = crate::glue::Event::FocusLost;
-                model = crate::roc::update(model, event);
+                let event = glue::Event::FocusLost;
+                model = roc::update(model, event);
             }
             InputEvent::Paste(contents) => {
                 let roc_string = roc_std::RocStr::from(&contents[..]);
-                let event = crate::glue::Event::Paste(roc_string);
-                model = crate::roc::update(model, event);
+                let event = glue::Event::Paste(roc_string);
+                model = roc::update(model, event);
             }
             InputEvent::Resize(column, row) => {
-                let window_bounds = crate::glue::Bounds {
+                let window_bounds = glue::Bounds {
                     height: column,
                     width: row,
                 };
-                let event = crate::glue::Event::Resize(window_bounds);
-                model = crate::roc::update(model, event);
+                let event = glue::Event::Resize(window_bounds);
+                model = roc::update(model, event);
             }
             InputEvent::Tick => {
-                let event = crate::glue::Event::Tick;
-                (model, elems) = crate::roc::update_and_render(model, event);
+                let event = glue::Event::Tick;
+                (model, elems) = roc::update_and_render(model, event);
 
                 // Draw the widgets
                 terminal
@@ -175,10 +177,10 @@ impl Events {
     }
 }
 
-fn get_cursor(cursor : crate::glue::Cursor) -> Option<(u16, u16)> {
+fn get_cursor(cursor : glue::Cursor) -> Option<(u16, u16)> {
     match cursor.discriminant() {
-        crate::glue::discriminant_Cursor::Hidden => None,
-        crate::glue::discriminant_Cursor::At => {
+        glue::discriminant_Cursor::Hidden => None,
+        glue::discriminant_Cursor::At => {
             let cp =  unsafe { cursor.as_At() };
             Some((cp.col,cp.row))
         },
@@ -188,20 +190,20 @@ fn get_cursor(cursor : crate::glue::Cursor) -> Option<(u16, u16)> {
 fn render_widget<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    elem: &crate::glue::Elem,
+    elem: &glue::Elem,
 ) {
     match elem.discriminant() {
-        crate::glue::discriminant_Elem::Paragraph => render_paragraph(f, area, elem),
-        crate::glue::discriminant_Elem::Layout => render_layout(f, area, elem),
-        crate::glue::discriminant_Elem::Block => render_block(f, area, elem),
-        crate::glue::discriminant_Elem::ListItems => render_list(f, area, elem),
+        glue::discriminant_Elem::Paragraph => render_paragraph(f, area, elem),
+        glue::discriminant_Elem::Layout => render_layout(f, area, elem),
+        glue::discriminant_Elem::Block => render_block(f, area, elem),
+        glue::discriminant_Elem::ListItems => render_list(f, area, elem),
     }
 }
 
 fn render_layout<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    layout: &crate::glue::Elem,
+    layout: &glue::Elem,
 ) {
     let (elems, config) = unsafe { layout.as_Layout() };
     let layout_direction = get_layout_direction(config.direction);
@@ -275,7 +277,7 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: tui::layout::Rect) -> tui::l
 fn render_paragraph<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    paragraph: &crate::glue::Elem,
+    paragraph: &glue::Elem,
 ) {
     let config = unsafe { paragraph.as_Paragraph() };
 
@@ -333,7 +335,7 @@ fn render_paragraph<B: tui::backend::Backend>(
 fn render_block<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    block: &crate::glue::Elem,
+    block: &glue::Elem,
 ) {
     let config = unsafe { block.as_Block() };
 
@@ -362,7 +364,7 @@ fn render_block<B: tui::backend::Backend>(
 fn render_list<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    list: &crate::glue::Elem,
+    list: &glue::Elem,
 ) {
     let config = unsafe { list.as_ListItems() };
 
@@ -412,47 +414,29 @@ fn render_list<B: tui::backend::Backend>(
 
 }
 
-fn get_style(roc_style: &crate::glue::Style) -> tui::style::Style {
+fn get_style(roc_style: &glue::Style) -> tui::style::Style {
     let mut style = tui::style::Style::default();
 
-    if roc_style.bg.discriminant() != crate::glue::discriminant_Color::Default {
+    if roc_style.bg.discriminant() != glue::discriminant_Color::Default {
         style = style.bg(get_color(roc_style.bg));
     }
 
-    if roc_style.fg.discriminant() != crate::glue::discriminant_Color::Default {
+    if roc_style.fg.discriminant() != glue::discriminant_Color::Default {
         style = style.fg(get_color(roc_style.fg));
     }
 
     let mut modifiers = tui::style::Modifier::empty();
     for modifier in &roc_style.modifiers {
         match modifier {
-            crate::glue::TextModifier::Bold => {
-                modifiers.insert(tui::style::Modifier::BOLD);
-            }
-            crate::glue::TextModifier::CrossedOut => {
-                modifiers.insert(tui::style::Modifier::CROSSED_OUT);
-            }
-            crate::glue::TextModifier::Dim => {
-                modifiers.insert(tui::style::Modifier::DIM);
-            }
-            crate::glue::TextModifier::Hidden => {
-                modifiers.insert(tui::style::Modifier::HIDDEN);
-            }
-            crate::glue::TextModifier::Italic => {
-                modifiers.insert(tui::style::Modifier::ITALIC);
-            }
-            crate::glue::TextModifier::RapidBlink => {
-                modifiers.insert(tui::style::Modifier::RAPID_BLINK);
-            }
-            crate::glue::TextModifier::Reversed => {
-                modifiers.insert(tui::style::Modifier::REVERSED);
-            }
-            crate::glue::TextModifier::SlowBlink => {
-                modifiers.insert(tui::style::Modifier::SLOW_BLINK);
-            }
-            crate::glue::TextModifier::Underlined => {
-                modifiers.insert(tui::style::Modifier::UNDERLINED);
-            }
+            glue::TextModifier::Bold => modifiers.insert(tui::style::Modifier::BOLD),
+            glue::TextModifier::CrossedOut => modifiers.insert(tui::style::Modifier::CROSSED_OUT),
+            glue::TextModifier::Dim => modifiers.insert(tui::style::Modifier::DIM),
+            glue::TextModifier::Hidden => modifiers.insert(tui::style::Modifier::HIDDEN),
+            glue::TextModifier::Italic => modifiers.insert(tui::style::Modifier::ITALIC),
+            glue::TextModifier::RapidBlink => modifiers.insert(tui::style::Modifier::RAPID_BLINK),
+            glue::TextModifier::Reversed => modifiers.insert(tui::style::Modifier::REVERSED),
+            glue::TextModifier::SlowBlink => modifiers.insert(tui::style::Modifier::SLOW_BLINK),
+            glue::TextModifier::Underlined => modifiers.insert(tui::style::Modifier::UNDERLINED),
         }
     }
     style = style.add_modifier(modifiers);
@@ -460,89 +444,89 @@ fn get_style(roc_style: &crate::glue::Style) -> tui::style::Style {
     style
 }
 
-fn get_color(color: crate::glue::Color) -> tui::style::Color {
+fn get_color(color: glue::Color) -> tui::style::Color {
     match color.discriminant() {
-        crate::glue::discriminant_Color::Black => tui::style::Color::Black,
-        crate::glue::discriminant_Color::Blue => tui::style::Color::Blue,
-        crate::glue::discriminant_Color::Cyan => tui::style::Color::Cyan,
-        crate::glue::discriminant_Color::DarkGray => tui::style::Color::DarkGray,
-        crate::glue::discriminant_Color::Default => tui::style::Color::Reset,
-        crate::glue::discriminant_Color::Gray => tui::style::Color::Gray,
-        crate::glue::discriminant_Color::Green => tui::style::Color::Green,
-        crate::glue::discriminant_Color::Indexed => {
+        glue::discriminant_Color::Black => tui::style::Color::Black,
+        glue::discriminant_Color::Blue => tui::style::Color::Blue,
+        glue::discriminant_Color::Cyan => tui::style::Color::Cyan,
+        glue::discriminant_Color::DarkGray => tui::style::Color::DarkGray,
+        glue::discriminant_Color::Default => tui::style::Color::Reset,
+        glue::discriminant_Color::Gray => tui::style::Color::Gray,
+        glue::discriminant_Color::Green => tui::style::Color::Green,
+        glue::discriminant_Color::Indexed => {
             let color = unsafe { color.into_Indexed() };
             tui::style::Color::Indexed(color)
         },
-        crate::glue::discriminant_Color::LightBlue => tui::style::Color::LightBlue,
-        crate::glue::discriminant_Color::LightCyan => tui::style::Color::LightCyan,
-        crate::glue::discriminant_Color::LightGreen  => tui::style::Color::LightGreen,
-        crate::glue::discriminant_Color::LightMagenta  => tui::style::Color::LightMagenta,
-        crate::glue::discriminant_Color::LightRed  => tui::style::Color::LightRed,
-        crate::glue::discriminant_Color::LightYellow  => tui::style::Color::LightYellow,
-        crate::glue::discriminant_Color::Magenta  => tui::style::Color::Magenta,
-        crate::glue::discriminant_Color::Red  => tui::style::Color::Red,
-        crate::glue::discriminant_Color::Rgb  => {
+        glue::discriminant_Color::LightBlue => tui::style::Color::LightBlue,
+        glue::discriminant_Color::LightCyan => tui::style::Color::LightCyan,
+        glue::discriminant_Color::LightGreen  => tui::style::Color::LightGreen,
+        glue::discriminant_Color::LightMagenta  => tui::style::Color::LightMagenta,
+        glue::discriminant_Color::LightRed  => tui::style::Color::LightRed,
+        glue::discriminant_Color::LightYellow  => tui::style::Color::LightYellow,
+        glue::discriminant_Color::Magenta  => tui::style::Color::Magenta,
+        glue::discriminant_Color::Red  => tui::style::Color::Red,
+        glue::discriminant_Color::Rgb  => {
             let color = unsafe { color.into_Rgb() };
             tui::style::Color::Rgb(color.0, color.1, color.2)
         },
-        crate::glue::discriminant_Color::White  => tui::style::Color::White,
-        crate::glue::discriminant_Color::Yellow  => tui::style::Color::Yellow,
+        glue::discriminant_Color::White  => tui::style::Color::White,
+        glue::discriminant_Color::Yellow  => tui::style::Color::Yellow,
     }
 }
 
-fn get_alignment(roc_alignment: crate::glue::Alignment) -> tui::layout::Alignment {
+fn get_alignment(roc_alignment: glue::Alignment) -> tui::layout::Alignment {
     match roc_alignment {
-        crate::glue::Alignment::Left => tui::layout::Alignment::Left,
-        crate::glue::Alignment::Center => tui::layout::Alignment::Center,
-        crate::glue::Alignment::Right => tui::layout::Alignment::Right,
+        glue::Alignment::Left => tui::layout::Alignment::Left,
+        glue::Alignment::Center => tui::layout::Alignment::Center,
+        glue::Alignment::Right => tui::layout::Alignment::Right,
     }
 }
 
-fn get_border_type(rbt: crate::glue::BorderType) -> tui::widgets::BorderType {
+fn get_border_type(rbt: glue::BorderType) -> tui::widgets::BorderType {
     match rbt {
-        crate::glue::BorderType::Plain => tui::widgets::BorderType::Plain,
-        crate::glue::BorderType::Rounded => tui::widgets::BorderType::Rounded,
-        crate::glue::BorderType::Double => tui::widgets::BorderType::Double,
-        crate::glue::BorderType::Thick => tui::widgets::BorderType::Thick,
+        glue::BorderType::Plain => tui::widgets::BorderType::Plain,
+        glue::BorderType::Rounded => tui::widgets::BorderType::Rounded,
+        glue::BorderType::Double => tui::widgets::BorderType::Double,
+        glue::BorderType::Thick => tui::widgets::BorderType::Thick,
     }
 }
 
-fn get_borders(rb: &roc_std::RocList<crate::glue::BorderModifier>) -> tui::widgets::Borders {
+fn get_borders(rb: &RocList<glue::BorderModifier>) -> tui::widgets::Borders {
     let mut borders = tui::widgets::Borders::empty();
     for border in rb {
         match border {
-            crate::glue::BorderModifier::All => borders.insert(tui::widgets::Borders::ALL),
-            crate::glue::BorderModifier::Bottom => borders.insert(tui::widgets::Borders::BOTTOM),
-            crate::glue::BorderModifier::Left => borders.insert(tui::widgets::Borders::LEFT),
-            crate::glue::BorderModifier::None => borders.insert(tui::widgets::Borders::NONE),
-            crate::glue::BorderModifier::Right => borders.insert(tui::widgets::Borders::RIGHT),
-            crate::glue::BorderModifier::Top => borders.insert(tui::widgets::Borders::TOP),
+            glue::BorderModifier::All => borders.insert(tui::widgets::Borders::ALL),
+            glue::BorderModifier::Bottom => borders.insert(tui::widgets::Borders::BOTTOM),
+            glue::BorderModifier::Left => borders.insert(tui::widgets::Borders::LEFT),
+            glue::BorderModifier::None => borders.insert(tui::widgets::Borders::NONE),
+            glue::BorderModifier::Right => borders.insert(tui::widgets::Borders::RIGHT),
+            glue::BorderModifier::Top => borders.insert(tui::widgets::Borders::TOP),
         }
     }
     borders
 }
 
-fn get_constraints(rc: &roc_std::RocList<crate::glue::Constraint>) -> Vec<tui::layout::Constraint> {
+fn get_constraints(rc: &RocList<glue::Constraint>) -> Vec<tui::layout::Constraint> {
     let mut constraints: Vec<tui::layout::Constraint> = Vec::with_capacity(rc.len());
     for constraint in rc {
         match constraint.discriminant() {
-            crate::glue::discriminant_Constraint::Length => {
+            glue::discriminant_Constraint::Length => {
                 let l = unsafe { constraint.as_Length() };
                 constraints.push(tui::layout::Constraint::Length(*l));
             }
-            crate::glue::discriminant_Constraint::Max => {
+            glue::discriminant_Constraint::Max => {
                 let l = unsafe { constraint.as_Max() };
                 constraints.push(tui::layout::Constraint::Max(*l));
             }
-            crate::glue::discriminant_Constraint::Min => {
+            glue::discriminant_Constraint::Min => {
                 let l = unsafe { constraint.as_Min() };
                 constraints.push(tui::layout::Constraint::Min(*l));
             }
-            crate::glue::discriminant_Constraint::Percentage => {
+            glue::discriminant_Constraint::Percentage => {
                 let l = unsafe { constraint.as_Percentage() };
                 constraints.push(tui::layout::Constraint::Percentage(*l));
             }
-            crate::glue::discriminant_Constraint::Ratio => {
+            glue::discriminant_Constraint::Ratio => {
                 let (r1, r2) = unsafe { constraint.as_Ratio() };
                 constraints.push(tui::layout::Constraint::Ratio(*r1, *r2));
             }
@@ -551,133 +535,123 @@ fn get_constraints(rc: &roc_std::RocList<crate::glue::Constraint>) -> Vec<tui::l
     constraints
 }
 
-fn get_layout_direction(direction: crate::glue::LayoutDirection) -> tui::layout::Direction {
+fn get_layout_direction(direction: glue::LayoutDirection) -> tui::layout::Direction {
     match direction {
-        crate::glue::LayoutDirection::Horizontal => tui::layout::Direction::Horizontal,
-        crate::glue::LayoutDirection::Vertical => tui::layout::Direction::Vertical,
+        glue::LayoutDirection::Horizontal => tui::layout::Direction::Horizontal,
+        glue::LayoutDirection::Vertical => tui::layout::Direction::Vertical,
     }
 }
 
-fn get_key_code(event: crossterm::event::KeyCode) -> crate::glue::KeyCode {
+fn get_key_code(event: crossterm::event::KeyCode) -> glue::KeyCode {
     match event {
-        crossterm::event::KeyCode::BackTab => crate::glue::KeyCode::BackTab,
-        crossterm::event::KeyCode::Backspace => crate::glue::KeyCode::Backspace,
-        crossterm::event::KeyCode::CapsLock => crate::glue::KeyCode::CapsLock,
-        crossterm::event::KeyCode::Delete => crate::glue::KeyCode::Delete,
-        crossterm::event::KeyCode::Down => crate::glue::KeyCode::Down,
-        crossterm::event::KeyCode::End => crate::glue::KeyCode::End,
-        crossterm::event::KeyCode::Enter => crate::glue::KeyCode::Enter,
-        crossterm::event::KeyCode::Esc => crate::glue::KeyCode::Esc,
-        crossterm::event::KeyCode::F(number) => crate::glue::KeyCode::Function(number),
-        crossterm::event::KeyCode::Home => crate::glue::KeyCode::Home,
-        crossterm::event::KeyCode::Insert => crate::glue::KeyCode::Insert,
-        crossterm::event::KeyCode::KeypadBegin => crate::glue::KeyCode::KeypadBegin,
-        crossterm::event::KeyCode::Left => crate::glue::KeyCode::Left,
-        crossterm::event::KeyCode::Media(mk) => {
-            crate::glue::KeyCode::Media(get_key_media(mk))
-        }
-        crossterm::event::KeyCode::Menu => crate::glue::KeyCode::Menu,
-        crossterm::event::KeyCode::Modifier(km) => {
-            crate::glue::KeyCode::Modifier(get_key_modifier(km))
-        }
-        crossterm::event::KeyCode::Null => crate::glue::KeyCode::Null,
-        crossterm::event::KeyCode::NumLock => crate::glue::KeyCode::NumLock,
-        crossterm::event::KeyCode::PageDown => crate::glue::KeyCode::PageDown,
-        crossterm::event::KeyCode::PageUp => crate::glue::KeyCode::PageUp,
-        crossterm::event::KeyCode::Pause => crate::glue::KeyCode::Pause,
-        crossterm::event::KeyCode::PrintScreen => crate::glue::KeyCode::PrintScreen,
-        crossterm::event::KeyCode::Right => crate::glue::KeyCode::Right,
+        crossterm::event::KeyCode::BackTab => glue::KeyCode::BackTab,
+        crossterm::event::KeyCode::Backspace => glue::KeyCode::Backspace,
+        crossterm::event::KeyCode::CapsLock => glue::KeyCode::CapsLock,
+        crossterm::event::KeyCode::Delete => glue::KeyCode::Delete,
+        crossterm::event::KeyCode::Down => glue::KeyCode::Down,
+        crossterm::event::KeyCode::End => glue::KeyCode::End,
+        crossterm::event::KeyCode::Enter => glue::KeyCode::Enter,
+        crossterm::event::KeyCode::Esc => glue::KeyCode::Esc,
+        crossterm::event::KeyCode::F(number) => glue::KeyCode::Function(number),
+        crossterm::event::KeyCode::Home => glue::KeyCode::Home,
+        crossterm::event::KeyCode::Insert => glue::KeyCode::Insert,
+        crossterm::event::KeyCode::KeypadBegin => glue::KeyCode::KeypadBegin,
+        crossterm::event::KeyCode::Left => glue::KeyCode::Left,
+        crossterm::event::KeyCode::Media(mk) => glue::KeyCode::Media(get_key_media(mk)),
+        crossterm::event::KeyCode::Menu => glue::KeyCode::Menu,
+        crossterm::event::KeyCode::Modifier(km) => glue::KeyCode::Modifier(get_key_modifier(km)),
+        crossterm::event::KeyCode::Null => glue::KeyCode::Null,
+        crossterm::event::KeyCode::NumLock => glue::KeyCode::NumLock,
+        crossterm::event::KeyCode::PageDown => glue::KeyCode::PageDown,
+        crossterm::event::KeyCode::PageUp => glue::KeyCode::PageUp,
+        crossterm::event::KeyCode::Pause => glue::KeyCode::Pause,
+        crossterm::event::KeyCode::PrintScreen => glue::KeyCode::PrintScreen,
+        crossterm::event::KeyCode::Right => glue::KeyCode::Right,
         crossterm::event::KeyCode::Char(ch) => {
             let string = String::from(ch);
             let roc_string = roc_std::RocStr::from(&string[..]);
-            crate::glue::KeyCode::Scalar(roc_string)
+            glue::KeyCode::Scalar(roc_string)
         }
-        crossterm::event::KeyCode::ScrollLock => crate::glue::KeyCode::ScrollLock,
-        crossterm::event::KeyCode::Tab => crate::glue::KeyCode::Tab,
-        crossterm::event::KeyCode::Up => crate::glue::KeyCode::Up,
+        crossterm::event::KeyCode::ScrollLock => glue::KeyCode::ScrollLock,
+        crossterm::event::KeyCode::Tab => glue::KeyCode::Tab,
+        crossterm::event::KeyCode::Up => glue::KeyCode::Up,
     }
 }
 
-fn get_key_modifier(km: crossterm::event::ModifierKeyCode) -> crate::glue::ModifierKeyCode {
+fn get_key_modifier(km: crossterm::event::ModifierKeyCode) -> glue::ModifierKeyCode {
     match km {
-        crossterm::event::ModifierKeyCode::IsoLevel3Shift => {
-            crate::glue::ModifierKeyCode::IsoLevel3Shift
-        }
-        crossterm::event::ModifierKeyCode::IsoLevel5Shift => {
-            crate::glue::ModifierKeyCode::IsoLevel5Shift
-        }
-        crossterm::event::ModifierKeyCode::LeftAlt => crate::glue::ModifierKeyCode::LeftAlt,
-        crossterm::event::ModifierKeyCode::LeftControl => crate::glue::ModifierKeyCode::LeftControl,
-        crossterm::event::ModifierKeyCode::LeftHyper => crate::glue::ModifierKeyCode::LeftHyper,
-        crossterm::event::ModifierKeyCode::LeftMeta => crate::glue::ModifierKeyCode::LeftMeta,
-        crossterm::event::ModifierKeyCode::LeftShift => crate::glue::ModifierKeyCode::LeftShift,
-        crossterm::event::ModifierKeyCode::LeftSuper => crate::glue::ModifierKeyCode::LeftSuper,
-        crossterm::event::ModifierKeyCode::RightAlt => crate::glue::ModifierKeyCode::RightAlt,
-        crossterm::event::ModifierKeyCode::RightControl => {
-            crate::glue::ModifierKeyCode::RightControl
-        }
-        crossterm::event::ModifierKeyCode::RightHyper => crate::glue::ModifierKeyCode::RightHyper,
-        crossterm::event::ModifierKeyCode::RightMeta => crate::glue::ModifierKeyCode::RightMeta,
-        crossterm::event::ModifierKeyCode::RightShift => crate::glue::ModifierKeyCode::RightShift,
-        crossterm::event::ModifierKeyCode::RightSuper => crate::glue::ModifierKeyCode::RightSuper,
+        crossterm::event::ModifierKeyCode::IsoLevel3Shift => glue::ModifierKeyCode::IsoLevel3Shift,
+        crossterm::event::ModifierKeyCode::IsoLevel5Shift => glue::ModifierKeyCode::IsoLevel5Shift,
+        crossterm::event::ModifierKeyCode::LeftAlt => glue::ModifierKeyCode::LeftAlt,
+        crossterm::event::ModifierKeyCode::LeftControl => glue::ModifierKeyCode::LeftControl,
+        crossterm::event::ModifierKeyCode::LeftHyper => glue::ModifierKeyCode::LeftHyper,
+        crossterm::event::ModifierKeyCode::LeftMeta => glue::ModifierKeyCode::LeftMeta,
+        crossterm::event::ModifierKeyCode::LeftShift => glue::ModifierKeyCode::LeftShift,
+        crossterm::event::ModifierKeyCode::LeftSuper => glue::ModifierKeyCode::LeftSuper,
+        crossterm::event::ModifierKeyCode::RightAlt => glue::ModifierKeyCode::RightAlt,
+        crossterm::event::ModifierKeyCode::RightControl => glue::ModifierKeyCode::RightControl,
+        crossterm::event::ModifierKeyCode::RightHyper => glue::ModifierKeyCode::RightHyper,
+        crossterm::event::ModifierKeyCode::RightMeta => glue::ModifierKeyCode::RightMeta,
+        crossterm::event::ModifierKeyCode::RightShift => glue::ModifierKeyCode::RightShift,
+        crossterm::event::ModifierKeyCode::RightSuper => glue::ModifierKeyCode::RightSuper,
     }
 }
 
-fn get_key_media(mk: crossterm::event::MediaKeyCode) -> crate::glue::MediaKeyCode {
+fn get_key_media(mk: crossterm::event::MediaKeyCode) -> glue::MediaKeyCode {
     match mk {
-        crossterm::event::MediaKeyCode::Play => crate::glue::MediaKeyCode::Play,
-        crossterm::event::MediaKeyCode::Pause => crate::glue::MediaKeyCode::Pause,
-        crossterm::event::MediaKeyCode::PlayPause => crate::glue::MediaKeyCode::PlayPause,
-        crossterm::event::MediaKeyCode::Reverse => crate::glue::MediaKeyCode::Reverse,
-        crossterm::event::MediaKeyCode::Stop => crate::glue::MediaKeyCode::Stop,
-        crossterm::event::MediaKeyCode::FastForward => crate::glue::MediaKeyCode::FastForward,
-        crossterm::event::MediaKeyCode::Rewind => crate::glue::MediaKeyCode::Rewind,
-        crossterm::event::MediaKeyCode::TrackNext => crate::glue::MediaKeyCode::TrackNext,
-        crossterm::event::MediaKeyCode::TrackPrevious => crate::glue::MediaKeyCode::TrackPrevious,
-        crossterm::event::MediaKeyCode::Record => crate::glue::MediaKeyCode::Record,
-        crossterm::event::MediaKeyCode::LowerVolume => crate::glue::MediaKeyCode::LowerVolume,
-        crossterm::event::MediaKeyCode::RaiseVolume => crate::glue::MediaKeyCode::RaiseVolume,
-        crossterm::event::MediaKeyCode::MuteVolume => crate::glue::MediaKeyCode::MuteVolume,
+        crossterm::event::MediaKeyCode::Play => glue::MediaKeyCode::Play,
+        crossterm::event::MediaKeyCode::Pause => glue::MediaKeyCode::Pause,
+        crossterm::event::MediaKeyCode::PlayPause => glue::MediaKeyCode::PlayPause,
+        crossterm::event::MediaKeyCode::Reverse => glue::MediaKeyCode::Reverse,
+        crossterm::event::MediaKeyCode::Stop => glue::MediaKeyCode::Stop,
+        crossterm::event::MediaKeyCode::FastForward => glue::MediaKeyCode::FastForward,
+        crossterm::event::MediaKeyCode::Rewind => glue::MediaKeyCode::Rewind,
+        crossterm::event::MediaKeyCode::TrackNext => glue::MediaKeyCode::TrackNext,
+        crossterm::event::MediaKeyCode::TrackPrevious => glue::MediaKeyCode::TrackPrevious,
+        crossterm::event::MediaKeyCode::Record => glue::MediaKeyCode::Record,
+        crossterm::event::MediaKeyCode::LowerVolume => glue::MediaKeyCode::LowerVolume,
+        crossterm::event::MediaKeyCode::RaiseVolume => glue::MediaKeyCode::RaiseVolume,
+        crossterm::event::MediaKeyCode::MuteVolume => glue::MediaKeyCode::MuteVolume,
     }
 }
 
+// TODO the following will crash if you give it too large a value
+// this is a hacky workaround to stop rust panicking if the scroll is too large
+// happens at the following location in tui-rs
+// Line 192 https://github.com/fdehau/tui-rs/src/widgets/paragraph.rs
 fn get_croll(scroll: u16) -> (u16, u16) {
-
-    // TODO the following will crash if you give it too large a value
-    // this is a workaround to stop rust panicking if the scroll is too large
-    // happens at the following location in tui-rs
-    // Line 192 https://github.com/fdehau/tui-rs/src/widgets/paragraph.rs
+    
     if scroll > 65000 {
         return (0, 0);
     }
 
-    // TODO investigate why scrolling the column doesn't do anything.. 
+    // TODO investigate why scrolling the column doesn't do anything... 
     (scroll, 0)
 }
 
-fn get_corner(corner : &crate::glue::Corner) -> tui::layout::Corner {
+fn get_corner(corner : &glue::Corner) -> tui::layout::Corner {
     match corner {
-        crate::glue::Corner::BottomLeft => tui::layout::Corner::BottomLeft,
-        crate::glue::Corner::BottomRight => tui::layout::Corner::BottomRight,
-        crate::glue::Corner::TopLeft => tui::layout::Corner::TopLeft,
-        crate::glue::Corner::TopRight => tui::layout::Corner::TopRight,
+        glue::Corner::BottomLeft => tui::layout::Corner::BottomLeft,
+        glue::Corner::BottomRight => tui::layout::Corner::BottomRight,
+        glue::Corner::TopLeft => tui::layout::Corner::TopLeft,
+        glue::Corner::TopRight => tui::layout::Corner::TopRight,
     }
 }
 
-fn get_list_selection(selection : &crate::glue::ListSelection) -> Option<usize> {
+fn get_list_selection(selection : &glue::ListSelection) -> Option<usize> {
     match selection.discriminant() {
-        crate::glue::discriminant_ListSelection::None => None,
-        crate::glue::discriminant_ListSelection::Selected =>{
+        glue::discriminant_ListSelection::None => None,
+        glue::discriminant_ListSelection::Selected =>{
             let s = unsafe { selection.into_Selected() };
             Some(s as usize)
         },
     }
 }
 
-fn get_popup(popup : &crate::glue::PopupConfig) -> Option<(u16,u16)>{
+fn get_popup(popup : &glue::PopupConfig) -> Option<(u16,u16)>{
     match popup.discriminant() {
-        crate::glue::discriminant_PopupConfig::None => None,
-        crate::glue::discriminant_PopupConfig::Centered =>{
+        glue::discriminant_PopupConfig::None => None,
+        glue::discriminant_PopupConfig::Centered =>{
             let pos = unsafe { popup.into_Centered() };
             Some((pos.percentX, pos.percentY))
         },

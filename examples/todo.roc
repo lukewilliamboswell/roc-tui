@@ -24,12 +24,12 @@ update = \model, event ->
                 Delete | Backspace -> { model & draft: removeChar model.draft }
                 Up -> 
                     if model.selected > 0 then 
-                        {model & selected : model.selected - 1}
+                        {model & selected : model.selected - 1, draft : ""}
                     else 
                         model 
                 Down -> 
                     if model.selected < List.len model.todos then 
-                        {model & selected : model.selected + 1}
+                        {model & selected : model.selected + 1, draft : ""}
                     else 
                         model
                 Enter ->
@@ -65,7 +65,10 @@ inputBox = \draft ->
     block = Elem.blockConfig { title, borders: [All], borderStyle: Elem.st { fg: Blue } }
     text = 
         if Str.isEmpty draft then 
-            [[Elem.styled "Type your todo here... and press enter to save it." { fg : Red}]]
+            [[
+                Elem.styled "Type your todo here... and then " { fg : Red },
+                Elem.styled "press enter" { fg : Red, modifiers : [Bold, SlowBlink, Italic]},
+            ]]
         else 
             [[Elem.styled draft { bg: Black, fg: White }]]
     cursor = 
