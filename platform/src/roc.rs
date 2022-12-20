@@ -11,11 +11,11 @@ type Model = c_void;
 extern "C" {
     // program
 
-    #[link_name = "roc__programForHost_1_exposed_generic"]
-    fn roc_program();
+    // #[link_name = "roc__programForHost_1_exposed_generic"]
+    // fn roc_program();
 
-    #[link_name = "roc__programForHost_size"]
-    fn roc_program_size() -> i64;
+    // #[link_name = "roc__programForHost_size"]
+    // fn roc_program_size() -> i64;
 
     // init
 

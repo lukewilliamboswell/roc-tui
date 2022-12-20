@@ -2,7 +2,7 @@ use roc_std::RocStr;
 
 const SCREEN_DRAW_RATE_MS: u64 = 50;
 
-pub fn run_event_loop(title: &str) {
+pub fn run_event_loop() {
 
     // Setup terminal
     crossterm::terminal::enable_raw_mode().expect("TODO handle enabling Raw mode on terminal");
@@ -25,23 +25,24 @@ pub fn run_event_loop(title: &str) {
     };
 
     // Initialise Roc app
-    let (mut model, mut elems) = crate::roc::init_and_render(window_bounds);
+    let mut elems : roc_std::RocList<crate::glue::Elem>;
+    let (mut model, _) = crate::roc::init_and_render(window_bounds);
 
     loop {
-        let mut appReturn = false;
+        let mut app_return = false;
 
         // Handle any events
-        let result = match events
+        match events
             .next()
             .expect("TODO handle unable to spawn event thread")
         {
             InputEvent::KeyPressed(key) => {
                 if key.code == crossterm::event::KeyCode::Esc {
                     // TODO don't hardcode the escape
-                    appReturn = true;
+                    app_return = true;
                 } else {
-                    let keyCode = getKeyCode(key.code);
-                    let event = crate::glue::Event::KeyPressed(keyCode);
+                    let kc = get_key_code(key.code);
+                    let event = crate::glue::Event::KeyPressed(kc);
                     model = crate::roc::update(model, event);
                 }
             }
@@ -67,21 +68,21 @@ pub fn run_event_loop(title: &str) {
                 model = crate::roc::update(model, event);
             }
             InputEvent::Tick => {
-                let tickEvent = crate::glue::Event::Tick;
-                (model, elems) = crate::roc::update_and_render(model, tickEvent);
+                let event = crate::glue::Event::Tick;
+                (model, elems) = crate::roc::update_and_render(model, event);
 
                 // Draw the widgets
                 terminal
                     .draw(|f| {
                         for elem in &elems {
-                            renderWidget(f, f.size(), &elem)
+                            render_widget(f, f.size(), &elem)
                         }
                     })
                     .expect("Err: Unable to draw to terminal.");
                 }
         };
 
-        if appReturn {
+        if app_return {
             break;
         }
     }
@@ -174,40 +175,40 @@ impl Events {
     }
 }
 
-fn getCursor(cursor : crate::glue::Cursor) -> Option<(u16, u16)> {
+fn get_cursor(cursor : crate::glue::Cursor) -> Option<(u16, u16)> {
     match cursor.discriminant() {
         crate::glue::discriminant_Cursor::Hidden => None,
         crate::glue::discriminant_Cursor::At => {
-            let cursorPos =  unsafe { cursor.as_At() };
-            Some((cursorPos.col,cursorPos.row))
+            let cp =  unsafe { cursor.as_At() };
+            Some((cp.col,cp.row))
         },
     }
 }
 
-fn renderWidget<B: tui::backend::Backend>(
+fn render_widget<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
     elem: &crate::glue::Elem,
 ) {
     match elem.discriminant() {
-        crate::glue::discriminant_Elem::Paragraph => renderParagraph(f, area, elem),
-        crate::glue::discriminant_Elem::Layout => renderLayout(f, area, elem),
-        crate::glue::discriminant_Elem::Block => renderBlock(f, area, elem),
-        crate::glue::discriminant_Elem::ListItems => renderList(f, area, elem),
+        crate::glue::discriminant_Elem::Paragraph => render_paragraph(f, area, elem),
+        crate::glue::discriminant_Elem::Layout => render_layout(f, area, elem),
+        crate::glue::discriminant_Elem::Block => render_block(f, area, elem),
+        crate::glue::discriminant_Elem::ListItems => render_list(f, area, elem),
     }
 }
 
-fn renderLayout<B: tui::backend::Backend>(
+fn render_layout<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
     layout: &crate::glue::Elem,
 ) {
-    let (mut elems, mut config) = unsafe { layout.as_Layout() };
-    let layoutDirection = getLayoutDirection(config.direction);
-    let mut constraints = getConstraints(&config.constraints);
+    let (elems, config) = unsafe { layout.as_Layout() };
+    let layout_direction = get_layout_direction(config.direction);
+    let mut constraints = get_constraints(&config.constraints);
 
     // Handle popup behaviour
-    let popup = getPopup(&config.popup);
+    let popup = get_popup(&config.popup);
     let area2 : tui::layout::Rect;
     match popup {
         None => {
@@ -229,16 +230,16 @@ fn renderLayout<B: tui::backend::Backend>(
     }
 
     let chunks = tui::layout::Layout::default()
-        .direction(layoutDirection)
+        .direction(layout_direction)
         .horizontal_margin(config.hMargin)
         .vertical_margin(config.vMargin)
         .constraints(constraints)
         .split(area2);
 
-    let mut chunkIndex = 0;
+    let mut chunk_index = 0;
     for elem in elems {
-        renderWidget(f, chunks[chunkIndex], elem);
-        chunkIndex += 1;
+        render_widget(f, chunks[chunk_index], elem);
+        chunk_index += 1;
     }
 
 }
@@ -271,7 +272,7 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: tui::layout::Rect) -> tui::l
         .split(popup_layout[1])[1]
 }
 
-fn renderParagraph<B: tui::backend::Backend>(
+fn render_paragraph<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
     paragraph: &crate::glue::Elem,
@@ -279,11 +280,11 @@ fn renderParagraph<B: tui::backend::Backend>(
     let config = unsafe { paragraph.as_Paragraph() };
 
     // Block window for the paragraph text to live in
-    let borders = getBorders(&config.block.borders);
-    let border_type = getBorderType(config.block.borderType);
-    let border_style = getStyle(&config.block.borderStyle);
-    let title = tui::text::Span::styled(config.block.title.text.as_str(), getStyle(&config.block.title.style));
-    let title_alignment = getAlignment(config.block.titleAlignment);
+    let borders = get_borders(&config.block.borders);
+    let border_type = get_border_type(config.block.borderType);
+    let border_style = get_style(&config.block.borderStyle);
+    let title = tui::text::Span::styled(config.block.title.text.as_str(), get_style(&config.block.title.style));
+    let title_alignment = get_alignment(config.block.titleAlignment);
     let style = &config.block.style;
     let block = tui::widgets::Block::default()
         .title(title)
@@ -291,14 +292,14 @@ fn renderParagraph<B: tui::backend::Backend>(
         .borders(borders)
         .border_style(border_style)
         .border_type(border_type)
-        .style(getStyle(style));
+        .style(get_style(style));
 
     // Build pargraph up from nested Span(s)
     let mut text = Vec::new();
     for line in &config.text {
         let mut spans_elements = Vec::new();
         for span in line {
-            let s = tui::text::Span::styled(span.text.as_str(), getStyle(&span.style));
+            let s = tui::text::Span::styled(span.text.as_str(), get_style(&span.style));
             spans_elements.push(s);
         }
         let spans = tui::text::Spans::from(spans_elements);
@@ -306,8 +307,8 @@ fn renderParagraph<B: tui::backend::Backend>(
     }
 
     // Create the paragraph
-    let text_alignment = getAlignment(config.textAlignment);
-    let scroll = getScroll(config.scroll);
+    let text_alignment = get_alignment(config.textAlignment);
+    let scroll = get_croll(config.scroll);
     let p = tui::widgets::Paragraph::new(text)
         .block(block)
         .scroll(scroll)
@@ -315,7 +316,7 @@ fn renderParagraph<B: tui::backend::Backend>(
         .alignment(text_alignment);
 
     // Show the cursor if required
-    let cursor = getCursor(config.cursor);
+    let cursor = get_cursor(config.cursor);
     match cursor {
         None => {
             // will be hidden if not set
@@ -329,7 +330,7 @@ fn renderParagraph<B: tui::backend::Backend>(
     f.render_widget(p, area);
 }
 
-fn renderBlock<B: tui::backend::Backend>(
+fn render_block<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
     block: &crate::glue::Elem,
@@ -337,19 +338,19 @@ fn renderBlock<B: tui::backend::Backend>(
     let config = unsafe { block.as_Block() };
 
     // Block window for the paragraph text to live in
-    let borders = getBorders(&config.borders);
-    let borderStyle = getStyle(&config.borderStyle);
-    let borderType = getBorderType(config.borderType);
-    let title = tui::text::Span::styled(config.title.text.as_str(), getStyle(&config.title.style));
-    let titleAlignment = getAlignment(config.titleAlignment);
+    let borders = get_borders(&config.borders);
+    let border_style = get_style(&config.borderStyle);
+    let border_type = get_border_type(config.borderType);
+    let title = tui::text::Span::styled(config.title.text.as_str(), get_style(&config.title.style));
+    let title_alignment = get_alignment(config.titleAlignment);
     let style = &config.style;
     let block = tui::widgets::Block::default()
         .title(title)
-        .title_alignment(titleAlignment)
+        .title_alignment(title_alignment)
         .borders(borders)
-        .border_style(borderStyle)
-        .border_type(borderType)
-        .style(getStyle(style));
+        .border_style(border_style)
+        .border_type(border_type)
+        .style(get_style(style));
 
     f.render_widget(block, area);
 
@@ -358,7 +359,7 @@ fn renderBlock<B: tui::backend::Backend>(
     // way we recursively do layouts. Requires further investigation.
 }
 
-fn renderList<B: tui::backend::Backend>(
+fn render_list<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
     list: &crate::glue::Elem,
@@ -366,11 +367,11 @@ fn renderList<B: tui::backend::Backend>(
     let config = unsafe { list.as_ListItems() };
 
     // Block window for the list to live in
-    let borders = getBorders(&config.block.borders);
-    let border_type = getBorderType(config.block.borderType);
-    let border_style = getStyle(&config.block.borderStyle);
-    let title = tui::text::Span::styled(config.block.title.text.as_str(), getStyle(&config.block.title.style));
-    let title_alignment = getAlignment(config.block.titleAlignment);
+    let borders = get_borders(&config.block.borders);
+    let border_type = get_border_type(config.block.borderType);
+    let border_style = get_style(&config.block.borderStyle);
+    let title = tui::text::Span::styled(config.block.title.text.as_str(), get_style(&config.block.title.style));
+    let title_alignment = get_alignment(config.block.titleAlignment);
     let style = &config.block.style;
     let block = tui::widgets::Block::default()
         .title(title)
@@ -384,25 +385,25 @@ fn renderList<B: tui::backend::Backend>(
     for line in &config.items {
         let mut spans_elements = Vec::new();
         for span in line {
-            let s = tui::text::Span::styled(span.text.as_str(), getStyle(&span.style));
+            let s = tui::text::Span::styled(span.text.as_str(), get_style(&span.style));
             spans_elements.push(s);
         }
         let spans = tui::text::Spans::from(spans_elements);
-        let listItem = tui::widgets::ListItem::new(spans);
-        items.push(listItem);
+        let list_item = tui::widgets::ListItem::new(spans);
+        items.push(list_item);
     }
 
     let highlight_symbol =  RocStr::as_str(&config.highlightSymbol);
-    let start_corner = getCorner(&config.startCorner);
+    let start_corner = get_corner(&config.startCorner);
     let list = tui::widgets::List::new(items)
         .block(block)
-        .style(getStyle(style))
-        .highlight_style(getStyle(&config.highlightStyle))
+        .style(get_style(style))
+        .highlight_style(get_style(&config.highlightStyle))
         .highlight_symbol(highlight_symbol)
         .repeat_highlight_symbol(config.highlightSymbolRepeat)
         .start_corner(start_corner);
 
-    let selection = getListSelection(&config.selected);
+    let selection = get_list_selection(&config.selected);
     let mut list_state = tui::widgets::ListState::default();
     list_state.select(selection);
         
@@ -411,19 +412,19 @@ fn renderList<B: tui::backend::Backend>(
 
 }
 
-fn getStyle(rocStyle: &crate::glue::Style) -> tui::style::Style {
+fn get_style(roc_style: &crate::glue::Style) -> tui::style::Style {
     let mut style = tui::style::Style::default();
 
-    if rocStyle.bg.discriminant() != crate::glue::discriminant_Color::Default {
-        style = style.bg(getColor(rocStyle.bg));
+    if roc_style.bg.discriminant() != crate::glue::discriminant_Color::Default {
+        style = style.bg(get_color(roc_style.bg));
     }
 
-    if rocStyle.fg.discriminant() != crate::glue::discriminant_Color::Default {
-        style = style.fg(getColor(rocStyle.fg));
+    if roc_style.fg.discriminant() != crate::glue::discriminant_Color::Default {
+        style = style.fg(get_color(roc_style.fg));
     }
 
     let mut modifiers = tui::style::Modifier::empty();
-    for modifier in &rocStyle.modifiers {
+    for modifier in &roc_style.modifiers {
         match modifier {
             crate::glue::TextModifier::Bold => {
                 modifiers.insert(tui::style::Modifier::BOLD);
@@ -459,7 +460,7 @@ fn getStyle(rocStyle: &crate::glue::Style) -> tui::style::Style {
     style
 }
 
-fn getColor(color: crate::glue::Color) -> tui::style::Color {
+fn get_color(color: crate::glue::Color) -> tui::style::Color {
     match color.discriminant() {
         crate::glue::discriminant_Color::Black => tui::style::Color::Black,
         crate::glue::discriminant_Color::Blue => tui::style::Color::Blue,
@@ -489,16 +490,16 @@ fn getColor(color: crate::glue::Color) -> tui::style::Color {
     }
 }
 
-fn getAlignment(rocAlignment: crate::glue::Alignment) -> tui::layout::Alignment {
-    match rocAlignment {
+fn get_alignment(roc_alignment: crate::glue::Alignment) -> tui::layout::Alignment {
+    match roc_alignment {
         crate::glue::Alignment::Left => tui::layout::Alignment::Left,
         crate::glue::Alignment::Center => tui::layout::Alignment::Center,
         crate::glue::Alignment::Right => tui::layout::Alignment::Right,
     }
 }
 
-fn getBorderType(rocBorderType: crate::glue::BorderType) -> tui::widgets::BorderType {
-    match rocBorderType {
+fn get_border_type(rbt: crate::glue::BorderType) -> tui::widgets::BorderType {
+    match rbt {
         crate::glue::BorderType::Plain => tui::widgets::BorderType::Plain,
         crate::glue::BorderType::Rounded => tui::widgets::BorderType::Rounded,
         crate::glue::BorderType::Double => tui::widgets::BorderType::Double,
@@ -506,9 +507,9 @@ fn getBorderType(rocBorderType: crate::glue::BorderType) -> tui::widgets::Border
     }
 }
 
-fn getBorders(rocBorders: &roc_std::RocList<crate::glue::BorderModifier>) -> tui::widgets::Borders {
+fn get_borders(rb: &roc_std::RocList<crate::glue::BorderModifier>) -> tui::widgets::Borders {
     let mut borders = tui::widgets::Borders::empty();
-    for border in rocBorders {
+    for border in rb {
         match border {
             crate::glue::BorderModifier::All => borders.insert(tui::widgets::Borders::ALL),
             crate::glue::BorderModifier::Bottom => borders.insert(tui::widgets::Borders::BOTTOM),
@@ -521,11 +522,9 @@ fn getBorders(rocBorders: &roc_std::RocList<crate::glue::BorderModifier>) -> tui
     borders
 }
 
-fn getConstraints(
-    rocConstraints: &roc_std::RocList<crate::glue::Constraint>,
-) -> Vec<tui::layout::Constraint> {
-    let mut constraints: Vec<tui::layout::Constraint> = Vec::with_capacity(rocConstraints.len());
-    for constraint in rocConstraints {
+fn get_constraints(rc: &roc_std::RocList<crate::glue::Constraint>) -> Vec<tui::layout::Constraint> {
+    let mut constraints: Vec<tui::layout::Constraint> = Vec::with_capacity(rc.len());
+    for constraint in rc {
         match constraint.discriminant() {
             crate::glue::discriminant_Constraint::Length => {
                 let l = unsafe { constraint.as_Length() };
@@ -552,14 +551,14 @@ fn getConstraints(
     constraints
 }
 
-fn getLayoutDirection(direction: crate::glue::LayoutDirection) -> tui::layout::Direction {
+fn get_layout_direction(direction: crate::glue::LayoutDirection) -> tui::layout::Direction {
     match direction {
         crate::glue::LayoutDirection::Horizontal => tui::layout::Direction::Horizontal,
         crate::glue::LayoutDirection::Vertical => tui::layout::Direction::Vertical,
     }
 }
 
-fn getKeyCode(event: crossterm::event::KeyCode) -> crate::glue::KeyCode {
+fn get_key_code(event: crossterm::event::KeyCode) -> crate::glue::KeyCode {
     match event {
         crossterm::event::KeyCode::BackTab => crate::glue::KeyCode::BackTab,
         crossterm::event::KeyCode::Backspace => crate::glue::KeyCode::Backspace,
@@ -574,12 +573,12 @@ fn getKeyCode(event: crossterm::event::KeyCode) -> crate::glue::KeyCode {
         crossterm::event::KeyCode::Insert => crate::glue::KeyCode::Insert,
         crossterm::event::KeyCode::KeypadBegin => crate::glue::KeyCode::KeypadBegin,
         crossterm::event::KeyCode::Left => crate::glue::KeyCode::Left,
-        crossterm::event::KeyCode::Media(mediaKey) => {
-            crate::glue::KeyCode::Media(getKeyMedia(mediaKey))
+        crossterm::event::KeyCode::Media(mk) => {
+            crate::glue::KeyCode::Media(get_key_media(mk))
         }
         crossterm::event::KeyCode::Menu => crate::glue::KeyCode::Menu,
-        crossterm::event::KeyCode::Modifier(keyMod) => {
-            crate::glue::KeyCode::Modifier(getKeyModifier(keyMod))
+        crossterm::event::KeyCode::Modifier(km) => {
+            crate::glue::KeyCode::Modifier(get_key_modifier(km))
         }
         crossterm::event::KeyCode::Null => crate::glue::KeyCode::Null,
         crossterm::event::KeyCode::NumLock => crate::glue::KeyCode::NumLock,
@@ -599,8 +598,8 @@ fn getKeyCode(event: crossterm::event::KeyCode) -> crate::glue::KeyCode {
     }
 }
 
-fn getKeyModifier(keyMod: crossterm::event::ModifierKeyCode) -> crate::glue::ModifierKeyCode {
-    match keyMod {
+fn get_key_modifier(km: crossterm::event::ModifierKeyCode) -> crate::glue::ModifierKeyCode {
+    match km {
         crossterm::event::ModifierKeyCode::IsoLevel3Shift => {
             crate::glue::ModifierKeyCode::IsoLevel3Shift
         }
@@ -624,8 +623,8 @@ fn getKeyModifier(keyMod: crossterm::event::ModifierKeyCode) -> crate::glue::Mod
     }
 }
 
-fn getKeyMedia(mediaKey: crossterm::event::MediaKeyCode) -> crate::glue::MediaKeyCode {
-    match mediaKey {
+fn get_key_media(mk: crossterm::event::MediaKeyCode) -> crate::glue::MediaKeyCode {
+    match mk {
         crossterm::event::MediaKeyCode::Play => crate::glue::MediaKeyCode::Play,
         crossterm::event::MediaKeyCode::Pause => crate::glue::MediaKeyCode::Pause,
         crossterm::event::MediaKeyCode::PlayPause => crate::glue::MediaKeyCode::PlayPause,
@@ -642,7 +641,7 @@ fn getKeyMedia(mediaKey: crossterm::event::MediaKeyCode) -> crate::glue::MediaKe
     }
 }
 
-fn getScroll(scroll: u16) -> (u16, u16) {
+fn get_croll(scroll: u16) -> (u16, u16) {
 
     // TODO the following will crash if you give it too large a value
     // this is a workaround to stop rust panicking if the scroll is too large
@@ -656,7 +655,7 @@ fn getScroll(scroll: u16) -> (u16, u16) {
     (scroll, 0)
 }
 
-fn getCorner(corner : &crate::glue::Corner) -> tui::layout::Corner {
+fn get_corner(corner : &crate::glue::Corner) -> tui::layout::Corner {
     match corner {
         crate::glue::Corner::BottomLeft => tui::layout::Corner::BottomLeft,
         crate::glue::Corner::BottomRight => tui::layout::Corner::BottomRight,
@@ -665,7 +664,7 @@ fn getCorner(corner : &crate::glue::Corner) -> tui::layout::Corner {
     }
 }
 
-fn getListSelection(selection : &crate::glue::ListSelection) -> Option<usize> {
+fn get_list_selection(selection : &crate::glue::ListSelection) -> Option<usize> {
     match selection.discriminant() {
         crate::glue::discriminant_ListSelection::None => None,
         crate::glue::discriminant_ListSelection::Selected =>{
@@ -675,7 +674,7 @@ fn getListSelection(selection : &crate::glue::ListSelection) -> Option<usize> {
     }
 }
 
-fn getPopup(popup : &crate::glue::PopupConfig) -> Option<(u16,u16)>{
+fn get_popup(popup : &crate::glue::PopupConfig) -> Option<(u16,u16)>{
     match popup.discriminant() {
         crate::glue::discriminant_PopupConfig::None => None,
         crate::glue::discriminant_PopupConfig::Centered =>{
