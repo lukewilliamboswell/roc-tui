@@ -29,9 +29,13 @@ render = \model ->
     [ Elem.layout [ Elem.paragraph { text } ] {} ]
 ```
 
-Here is a demonstration of the `todo.roc` example.
+Here is a demonstration of `examples/todo.roc`.
 
-![](todo-example.gif)
+![](todo-example2.gif)
+
+and, here is a demonstration of `examples/popup.roc`.
+
+![](popup-example2.gif)
 
 If your feeling brave you can use a URL release of this platform. For more information how to do this see the [Roc Tutorial](https://www.roc-lang.org/tutorial#the-app-module-header).
 

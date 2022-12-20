@@ -42,11 +42,9 @@ body = Elem.layout [ Elem.paragraph { text : bgText, block } ] {}
 # Popup modal
 modal = 
     Elem.layout [ 
-        Elem.paragraph { 
+        Elem.paragraph {
             text : [
-                [],
                 [Elem.styled "Can you handle this... press Enter to close me!" { fg: Red }],
-                [],
             ], 
             block : Elem.blockConfig { 
                 title : Elem.styled "WARNING!" { bg : Red, fg: White}, 
@@ -56,5 +54,5 @@ modal =
             textAlignment : Center,
         },
     ] { 
-        popup : Centered { percentX : 80, percentY : 20 },
+        popup : Centered { percentX : 80, percentY : 30 },
     }
