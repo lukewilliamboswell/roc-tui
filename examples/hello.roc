@@ -1,5 +1,5 @@
 app "example-app"
-    packages { pf: "../platform/main.roc" }
+    packages { pf: "https://github.com/lukewilliamboswell/roc-tui/releases/download/0.0.2/WGLVMwEtG9JJbYr60L_HkOqNCcowgkwEhSyqipgisaY.tar.br" }
     imports [
         pf.Event.{ Event },
         pf.Elem.{ Elem },
