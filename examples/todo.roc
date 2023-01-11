@@ -82,19 +82,19 @@ inputBox = \draft ->
 
 renderTodos = \todos, selected ->
     text = 
-        todo, index <- List.mapWithIndex todos
-        i = Num.toStr (index + 1)
+        List.mapWithIndex todos \todo, index ->
+            i = Num.toStr (index + 1)
 
-        if selected == (index + 1) then 
-            [
-                Elem.styled "#\(i): " { bg: Black, fg: White },
-                Elem.styled todo { fg: Green },
-            ]
-        else 
-            [
-                Elem.unstyled "#\(i): ",
-                Elem.unstyled todo,
-            ]
+            if selected == (index + 1) then 
+                [
+                    Elem.styled "#\(i): " { bg: Black, fg: White },
+                    Elem.styled todo { fg: Green },
+                ]
+            else 
+                [
+                    Elem.unstyled "#\(i): ",
+                    Elem.unstyled todo,
+                ]
     title = Elem.unstyled "TODOs"
     block = Elem.blockConfig { title, borders: [All] }
 
