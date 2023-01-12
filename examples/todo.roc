@@ -49,7 +49,7 @@ removeChar = \text ->
     textUtf8 = Str.toUtf8 text |> List.dropLast
     when Str.fromUtf8 textUtf8 is 
         Ok str -> str
-        Err _ -> text 
+        Err _ -> text
 
 # Render UI
 render : Model -> List Elem

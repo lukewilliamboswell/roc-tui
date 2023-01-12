@@ -38,12 +38,18 @@ Elem : [
     Layout (List Elem) LayoutConfig,
 ]
 
-## Options to modify text spans
+## Options to text in a span
 ##
 ##     styled "Hello World" { modifiers: [ Bold ] }
 TextModifier : [Bold, Dim, Italic, Underlined, SlowBlink, RapidBlink, Reversed, Hidden, CrossedOut]
+
+## Different border display options for a block or widget. Default is `None`.
+##
+##     blockConfig { borders: [All] }
 BorderModifier : [None, Top, Right, Bottom, Left, All]
+
 BorderType : [Plain, Rounded, Double, Thick]
+
 Alignment : [Left, Center, Right]
 ScrollOffset : U16
 Style : { fg : Color, bg : Color, modifiers : List TextModifier }
@@ -97,6 +103,19 @@ paragraph = \{ text ? [], block ? defaultBlock, textAlignment ? Left, scroll ? 0
         cursor,
     }
 
+## Create a list widget
+##
+##     title = unstyled "List Items"
+##     list { 
+##         items : [ 
+##             [unstyled "Apple"], 
+##             [unstyled "Pear"], 
+##             [unstyled "Banana"],
+##         ], 
+##         selected : Selected 2, 
+##         block : blockConfig { title, borders : [ All ] }, 
+##         highlightStyle : st { fg : Blue },
+##     }
 list :{
         items ? List Line,
         selected ? ListSelection,
@@ -125,8 +144,10 @@ BlockConfig : {
     borderType : BorderType,
 }
 
-# A single line string where all graphemes have the same style
+## Multiple spans on a single line
 Line : List Span
+
+## A single line string where all graphemes have the same style
 Span : { text : Str, style : Style }
 
 # A widget to display some text
@@ -160,14 +181,15 @@ ListConfig : {
     startCorner : Corner,
 }
 
-# The following list of 16 base colors are available for almost all terminals.
-# Light        Dark        DarkGrey    Black       Red        DarkRed
-# Green        DarkGreen   Yellow        DarkYellow  Blue    DarkBlue
-# Magenta    DarkMagenta Cyan        DarkCyan    White    Grey
-# 
-# Indexed is the [ANSI 256 color](https://jonasjacek.github.io/colors/)
-# Rgb is supported on most UNIX terminals and Windows 10 only
-# Underlying library is crossterm::style::Color
+## The following list of 16 base colors are available for almost all terminals;
+## - `Light`, `Dark`, `DarkGrey`, `Black`, `Red`, `DarkRed`, `Green`, `DarkGreen`, 
+## `Yellow`, `DarkYellow`, `Blue`, `DarkBlue`, `Magenta`, `DarkMagenta` `Cyan`, 
+## `DarkCyan`, `White`, `Grey`
+## 
+## `Indexed` is the [ANSI 256 color](https://jonasjacek.github.io/colors/)
+## `Rgb` is supported on most UNIX terminals and Windows 10 only
+##
+## Underlying library is [crossterm::style::Color](https://docs.rs/crossterm/latest/crossterm/style/enum.Color.html)
 Color : [
     Default,
     Black,
