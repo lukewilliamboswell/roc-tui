@@ -1,12 +1,15 @@
 # UNCOMMENT THIS TO USE ROC PLATFORM
 platform "tui"
     requires { Model } { program : _ }
-    exposes []
+    exposes [
+        Elem,
+        Event,
+    ]
     packages {}
     imports [
         Event.{ Bounds, Event },
         Elem.{ Elem },
-        ]
+    ]
     provides [programForHost]
 
 programForHost : {
@@ -33,7 +36,7 @@ programForHost =
 #     imports [
 #         Event.{ Bounds, Event },
 #         Elem.{ Elem },
-#         ]
+#     ]
 #     provides [programForHost]
 
 # Model : {}

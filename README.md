@@ -70,4 +70,10 @@ If your feeling brave you can use a URL release of this platform. For more infor
 6. Update `hello.roc` and other examples
 7. Rebuild release with `roc build --bundle .tar.br platform/main.roc` 
 
+## Platform Docs
 
+```sh
+roc docs platform/main.roc
+cd ./generated-docs
+simple-http-server --nocache --index
+```

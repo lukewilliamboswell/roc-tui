@@ -38,6 +38,9 @@ Elem : [
     Layout (List Elem) LayoutConfig,
 ]
 
+## Options to modify text spans
+##
+##     styled "Hello World" { modifiers: [ Bold ] }
 TextModifier : [Bold, Dim, Italic, Underlined, SlowBlink, RapidBlink, Reversed, Hidden, CrossedOut]
 BorderModifier : [None, Top, Right, Bottom, Left, All]
 BorderType : [Plain, Rounded, Double, Thick]
