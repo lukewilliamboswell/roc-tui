@@ -50,11 +50,11 @@ pub fn run_event_loop() {
             }
             InputEvent::FocusGained => {
                 let event = glue::Event::FocusGained;
-                model = roc::update(model, event);
+                model = roc::update(model, event());
             }
             InputEvent::FocusLost => {
                 let event = glue::Event::FocusLost;
-                model = roc::update(model, event);
+                model = roc::update(model, event());
             }
             InputEvent::Paste(contents) => {
                 let roc_string = roc_std::RocStr::from(&contents[..]);
@@ -71,7 +71,7 @@ pub fn run_event_loop() {
             }
             InputEvent::Tick => {
                 let event = glue::Event::Tick;
-                (model, elems) = roc::update_and_render(model, event);
+                (model, elems) = roc::update_and_render(model, event());
 
                 // Draw the widgets
                 terminal
@@ -181,7 +181,7 @@ fn get_cursor(cursor : glue::Cursor) -> Option<(u16, u16)> {
     match cursor.discriminant() {
         glue::discriminant_Cursor::Hidden => None,
         glue::discriminant_Cursor::At => {
-            let cp =  unsafe { cursor.as_At() };
+            let cp =   cursor.unwrap_At() ;
             Some((cp.col,cp.row))
         },
     }
@@ -193,21 +193,23 @@ fn render_widget<B: tui::backend::Backend>(
     elem: &glue::Elem,
 ) {
     match elem.discriminant() {
-        glue::discriminant_Elem::Paragraph => render_paragraph(f, area, elem),
-        glue::discriminant_Elem::Layout => render_layout(f, area, elem),
-        glue::discriminant_Elem::Block => render_block(f, area, elem),
-        glue::discriminant_Elem::ListItems => render_list(f, area, elem),
+        glue::discriminant_Elem::Paragraph => render_paragraph(f, area, elem.clone()),
+        glue::discriminant_Elem::Layout => render_layout(f, area, elem.clone()),
+        glue::discriminant_Elem::Block => render_block(f, area, elem.clone()),
+        glue::discriminant_Elem::ListItems => render_list(f, area, elem.clone()),
     }
 }
 
 fn render_layout<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    layout: &glue::Elem,
+    layout: glue::Elem,
 ) {
-    let (elems, config) = unsafe { layout.as_Layout() };
+    let elem_layout=  layout.get_Layout();
+    let config = elem_layout.f1;
+    let elems = elem_layout.f0;
     let layout_direction = get_layout_direction(config.direction);
-    let mut constraints = get_constraints(&config.constraints);
+    let mut constraints = get_constraints(config.constraints);
 
     // Handle popup behaviour
     let popup = get_popup(&config.popup);
@@ -239,7 +241,7 @@ fn render_layout<B: tui::backend::Backend>(
         .split(area2);
 
     let mut chunk_index = 0;
-    for elem in elems {
+    for elem in &elems {
         render_widget(f, chunks[chunk_index], elem);
         chunk_index += 1;
     }
@@ -277,15 +279,15 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: tui::layout::Rect) -> tui::l
 fn render_paragraph<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    paragraph: &glue::Elem,
+    paragraph: glue::Elem,
 ) {
-    let config = unsafe { paragraph.as_Paragraph() };
+    let config =  paragraph.get_Paragraph().f0 ;
 
     // Block window for the paragraph text to live in
     let borders = get_borders(&config.block.borders);
     let border_type = get_border_type(config.block.borderType);
-    let border_style = get_style(&config.block.borderStyle);
-    let title = tui::text::Span::styled(config.block.title.text.as_str(), get_style(&config.block.title.style));
+    let border_style = get_style(config.block.borderStyle);
+    let title = tui::text::Span::styled(config.block.title.text.as_str(), get_style(config.block.title.style));
     let title_alignment = get_alignment(config.block.titleAlignment);
     let style = &config.block.style;
     let block = tui::widgets::Block::default()
@@ -294,14 +296,14 @@ fn render_paragraph<B: tui::backend::Backend>(
         .borders(borders)
         .border_style(border_style)
         .border_type(border_type)
-        .style(get_style(style));
+        .style(get_style(style.clone()));
 
     // Build pargraph up from nested Span(s)
     let mut text = Vec::new();
     for line in &config.text {
         let mut spans_elements = Vec::new();
         for span in line {
-            let s = tui::text::Span::styled(span.text.as_str(), get_style(&span.style));
+            let s = tui::text::Span::styled(span.text.as_str(), get_style(span.style.clone()));
             spans_elements.push(s);
         }
         let spans = tui::text::Spans::from(spans_elements);
@@ -335,15 +337,15 @@ fn render_paragraph<B: tui::backend::Backend>(
 fn render_block<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    block: &glue::Elem,
+    block: glue::Elem,
 ) {
-    let config = unsafe { block.as_Block() };
+    let config = block.get_Block().f0;
 
     // Block window for the paragraph text to live in
     let borders = get_borders(&config.borders);
-    let border_style = get_style(&config.borderStyle);
+    let border_style = get_style(config.borderStyle);
     let border_type = get_border_type(config.borderType);
-    let title = tui::text::Span::styled(config.title.text.as_str(), get_style(&config.title.style));
+    let title = tui::text::Span::styled(config.title.text.as_str(), get_style(config.title.style));
     let title_alignment = get_alignment(config.titleAlignment);
     let style = &config.style;
     let block = tui::widgets::Block::default()
@@ -352,7 +354,7 @@ fn render_block<B: tui::backend::Backend>(
         .borders(borders)
         .border_style(border_style)
         .border_type(border_type)
-        .style(get_style(style));
+        .style(get_style(style.clone()));
 
     f.render_widget(block, area);
 
@@ -364,15 +366,15 @@ fn render_block<B: tui::backend::Backend>(
 fn render_list<B: tui::backend::Backend>(
     f: &mut tui::Frame<B>,
     area: tui::layout::Rect,
-    list: &glue::Elem,
+    list: glue::Elem,
 ) {
-    let config = unsafe { list.as_ListItems() };
+    let config = list.get_ListItems().f0;
 
     // Block window for the list to live in
     let borders = get_borders(&config.block.borders);
     let border_type = get_border_type(config.block.borderType);
-    let border_style = get_style(&config.block.borderStyle);
-    let title = tui::text::Span::styled(config.block.title.text.as_str(), get_style(&config.block.title.style));
+    let border_style = get_style(config.block.borderStyle);
+    let title = tui::text::Span::styled(config.block.title.text.as_str(), get_style(config.block.title.style));
     let title_alignment = get_alignment(config.block.titleAlignment);
     let style = &config.block.style;
     let block = tui::widgets::Block::default()
@@ -387,7 +389,7 @@ fn render_list<B: tui::backend::Backend>(
     for line in &config.items {
         let mut spans_elements = Vec::new();
         for span in line {
-            let s = tui::text::Span::styled(span.text.as_str(), get_style(&span.style));
+            let s = tui::text::Span::styled(span.text.as_str(), get_style(span.style.clone()));
             spans_elements.push(s);
         }
         let spans = tui::text::Spans::from(spans_elements);
@@ -399,13 +401,13 @@ fn render_list<B: tui::backend::Backend>(
     let start_corner = get_corner(&config.startCorner);
     let list = tui::widgets::List::new(items)
         .block(block)
-        .style(get_style(style))
-        .highlight_style(get_style(&config.highlightStyle))
+        .style(get_style(style.clone()))
+        .highlight_style(get_style(config.highlightStyle))
         .highlight_symbol(highlight_symbol)
         .repeat_highlight_symbol(config.highlightSymbolRepeat)
         .start_corner(start_corner);
 
-    let selection = get_list_selection(&config.selected);
+    let selection = get_list_selection(config.selected);
     let mut list_state = tui::widgets::ListState::default();
     list_state.select(selection);
         
@@ -414,7 +416,7 @@ fn render_list<B: tui::backend::Backend>(
 
 }
 
-fn get_style(roc_style: &glue::Style) -> tui::style::Style {
+fn get_style(roc_style: glue::Style) -> tui::style::Style {
     let mut style = tui::style::Style::default();
 
     if roc_style.bg.discriminant() != glue::discriminant_Color::Default {
@@ -454,7 +456,7 @@ fn get_color(color: glue::Color) -> tui::style::Color {
         glue::discriminant_Color::Gray => tui::style::Color::Gray,
         glue::discriminant_Color::Green => tui::style::Color::Green,
         glue::discriminant_Color::Indexed => {
-            let color = unsafe { color.into_Indexed() };
+            let color =  color.unwrap_Indexed() ;
             tui::style::Color::Indexed(color)
         },
         glue::discriminant_Color::LightBlue => tui::style::Color::LightBlue,
@@ -466,8 +468,9 @@ fn get_color(color: glue::Color) -> tui::style::Color {
         glue::discriminant_Color::Magenta  => tui::style::Color::Magenta,
         glue::discriminant_Color::Red  => tui::style::Color::Red,
         glue::discriminant_Color::Rgb  => {
-            let color = unsafe { color.into_Rgb() };
-            tui::style::Color::Rgb(color.0, color.1, color.2)
+            let color =  color.unwrap_Rgb();
+
+            tui::style::Color::Rgb(color.f0, color.f1, color.f2)
         },
         glue::discriminant_Color::White  => tui::style::Color::White,
         glue::discriminant_Color::Yellow  => tui::style::Color::Yellow,
@@ -506,29 +509,29 @@ fn get_borders(rb: &RocList<glue::BorderModifier>) -> tui::widgets::Borders {
     borders
 }
 
-fn get_constraints(rc: &RocList<glue::Constraint>) -> Vec<tui::layout::Constraint> {
+fn get_constraints(rc: RocList<glue::Constraint>) -> Vec<tui::layout::Constraint> {
     let mut constraints: Vec<tui::layout::Constraint> = Vec::with_capacity(rc.len());
-    for constraint in rc {
+    for constraint in &rc {
         match constraint.discriminant() {
             glue::discriminant_Constraint::Length => {
-                let l = unsafe { constraint.as_Length() };
-                constraints.push(tui::layout::Constraint::Length(*l));
+                let l = constraint.clone().unwrap_Length();
+                constraints.push(tui::layout::Constraint::Length(l));
             }
             glue::discriminant_Constraint::Max => {
-                let l = unsafe { constraint.as_Max() };
-                constraints.push(tui::layout::Constraint::Max(*l));
+                let l = constraint.clone().unwrap_Max();
+                constraints.push(tui::layout::Constraint::Max(l));
             }
             glue::discriminant_Constraint::Min => {
-                let l = unsafe { constraint.as_Min() };
-                constraints.push(tui::layout::Constraint::Min(*l));
+                let l = constraint.clone().unwrap_Min();
+                constraints.push(tui::layout::Constraint::Min(l));
             }
             glue::discriminant_Constraint::Percentage => {
-                let l = unsafe { constraint.as_Percentage() };
-                constraints.push(tui::layout::Constraint::Percentage(*l));
+                let l = constraint.clone().unwrap_Percentage();
+                constraints.push(tui::layout::Constraint::Percentage(l));
             }
             glue::discriminant_Constraint::Ratio => {
-                let (r1, r2) = unsafe { constraint.as_Ratio() };
-                constraints.push(tui::layout::Constraint::Ratio(*r1, *r2));
+                let cr = constraint.clone().unwrap_Ratio();
+                constraints.push(tui::layout::Constraint::Ratio(cr.f0,cr.f1 ));
             }
         }
     }
@@ -544,37 +547,37 @@ fn get_layout_direction(direction: glue::LayoutDirection) -> tui::layout::Direct
 
 fn get_key_code(event: crossterm::event::KeyCode) -> glue::KeyCode {
     match event {
-        crossterm::event::KeyCode::BackTab => glue::KeyCode::BackTab,
-        crossterm::event::KeyCode::Backspace => glue::KeyCode::Backspace,
-        crossterm::event::KeyCode::CapsLock => glue::KeyCode::CapsLock,
-        crossterm::event::KeyCode::Delete => glue::KeyCode::Delete,
-        crossterm::event::KeyCode::Down => glue::KeyCode::Down,
-        crossterm::event::KeyCode::End => glue::KeyCode::End,
-        crossterm::event::KeyCode::Enter => glue::KeyCode::Enter,
-        crossterm::event::KeyCode::Esc => glue::KeyCode::Esc,
+        crossterm::event::KeyCode::BackTab => glue::KeyCode::BackTab(),
+        crossterm::event::KeyCode::Backspace => glue::KeyCode::Backspace(),
+        crossterm::event::KeyCode::CapsLock => glue::KeyCode::CapsLock(),
+        crossterm::event::KeyCode::Delete => glue::KeyCode::Delete(),
+        crossterm::event::KeyCode::Down => glue::KeyCode::Down(),
+        crossterm::event::KeyCode::End => glue::KeyCode::End(),
+        crossterm::event::KeyCode::Enter => glue::KeyCode::Enter(),
+        crossterm::event::KeyCode::Esc => glue::KeyCode::Esc(),
         crossterm::event::KeyCode::F(number) => glue::KeyCode::Function(number),
-        crossterm::event::KeyCode::Home => glue::KeyCode::Home,
-        crossterm::event::KeyCode::Insert => glue::KeyCode::Insert,
-        crossterm::event::KeyCode::KeypadBegin => glue::KeyCode::KeypadBegin,
-        crossterm::event::KeyCode::Left => glue::KeyCode::Left,
+        crossterm::event::KeyCode::Home => glue::KeyCode::Home(),
+        crossterm::event::KeyCode::Insert => glue::KeyCode::Insert(),
+        crossterm::event::KeyCode::KeypadBegin => glue::KeyCode::KeypadBegin(),
+        crossterm::event::KeyCode::Left => glue::KeyCode::Left(),
         crossterm::event::KeyCode::Media(mk) => glue::KeyCode::Media(get_key_media(mk)),
-        crossterm::event::KeyCode::Menu => glue::KeyCode::Menu,
+        crossterm::event::KeyCode::Menu => glue::KeyCode::Menu(),
         crossterm::event::KeyCode::Modifier(km) => glue::KeyCode::Modifier(get_key_modifier(km)),
-        crossterm::event::KeyCode::Null => glue::KeyCode::Null,
-        crossterm::event::KeyCode::NumLock => glue::KeyCode::NumLock,
-        crossterm::event::KeyCode::PageDown => glue::KeyCode::PageDown,
-        crossterm::event::KeyCode::PageUp => glue::KeyCode::PageUp,
-        crossterm::event::KeyCode::Pause => glue::KeyCode::Pause,
-        crossterm::event::KeyCode::PrintScreen => glue::KeyCode::PrintScreen,
-        crossterm::event::KeyCode::Right => glue::KeyCode::Right,
+        crossterm::event::KeyCode::Null => glue::KeyCode::Null(),
+        crossterm::event::KeyCode::NumLock => glue::KeyCode::NumLock(),
+        crossterm::event::KeyCode::PageDown => glue::KeyCode::PageDown(),
+        crossterm::event::KeyCode::PageUp => glue::KeyCode::PageUp(),
+        crossterm::event::KeyCode::Pause => glue::KeyCode::Pause(),
+        crossterm::event::KeyCode::PrintScreen => glue::KeyCode::PrintScreen(),
+        crossterm::event::KeyCode::Right => glue::KeyCode::Right(),
         crossterm::event::KeyCode::Char(ch) => {
             let string = String::from(ch);
             let roc_string = roc_std::RocStr::from(&string[..]);
             glue::KeyCode::Scalar(roc_string)
         }
-        crossterm::event::KeyCode::ScrollLock => glue::KeyCode::ScrollLock,
-        crossterm::event::KeyCode::Tab => glue::KeyCode::Tab,
-        crossterm::event::KeyCode::Up => glue::KeyCode::Up,
+        crossterm::event::KeyCode::ScrollLock => glue::KeyCode::ScrollLock(),
+        crossterm::event::KeyCode::Tab => glue::KeyCode::Tab(),
+        crossterm::event::KeyCode::Up => glue::KeyCode::Up(),
     }
 }
 
@@ -638,11 +641,11 @@ fn get_corner(corner : &glue::Corner) -> tui::layout::Corner {
     }
 }
 
-fn get_list_selection(selection : &glue::ListSelection) -> Option<usize> {
+fn get_list_selection(selection : glue::ListSelection) -> Option<usize> {
     match selection.discriminant() {
         glue::discriminant_ListSelection::None => None,
         glue::discriminant_ListSelection::Selected =>{
-            let s = unsafe { selection.into_Selected() };
+            let s =  selection.unwrap_Selected();
             Some(s as usize)
         },
     }
@@ -652,7 +655,7 @@ fn get_popup(popup : &glue::PopupConfig) -> Option<(u16,u16)>{
     match popup.discriminant() {
         glue::discriminant_PopupConfig::None => None,
         glue::discriminant_PopupConfig::Centered =>{
-            let pos = unsafe { popup.into_Centered() };
+            let pos =  popup.clone().unwrap_Centered();
             Some((pos.percentX, pos.percentY))
         },
     }

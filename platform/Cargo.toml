@@ -15,7 +15,7 @@ name = "host"
 path = "src/main.rs"
 
 [dependencies]
-roc_std = { git = "https://github.com/roc-lang/roc", rev = "468be47" }
+roc_std = { git = "https://github.com/roc-lang/roc" }
 tui = "0.19"
 crossterm = "0.25"
 libc = "0.2"
