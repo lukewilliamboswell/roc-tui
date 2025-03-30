@@ -1,3 +1,4 @@
+**NOTE** I'm archiving this as it is no longer in development. I think the better approach is something more cross-platform like I have done in https://github.com/lukewilliamboswell/roc-ansi 
 
 # Terminal UI for Roc (WIP)
 
